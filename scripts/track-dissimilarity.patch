@@ -1,0 +1,78 @@
+--- klt-unmodified/trackFeatures.c	2006-03-29 04:50:13.000000000 +0900
++++ klt/trackFeatures.c	2006-04-27 15:02:52.000000000 +0900
+@@ -365,6 +365,27 @@
+ 
+ 
+ /*********************************************************************
++ * _sumSquareFloatWindow
++ */
++
++static float _sumSquareFloatWindow(
++  _FloatWindow fw,
++  int width,
++  int height)
++{
++  float v;
++  float sum = 0.0;
++  int w;
++
++  for ( ; height > 0 ; height--)
++    for (w=0 ; w < width ; w++)
++      v = (float) (*fw++);
++      sum += v*v;
++
++  return sum;
++}
++
++/*********************************************************************
+  * _trackFeature
+  *
+  * Tracks a feature point from one image to the next.
+@@ -392,7 +413,8 @@
+   float small,         /* determinant threshold for declaring KLT_SMALL_DET */
+   float th,            /* displacement threshold for stopping               */
+   float max_residue,   /* residue threshold for declaring KLT_LARGE_RESIDUE */
+-  int lighting_insensitive)  /* whether to normalize for gain and bias */
++  int lighting_insensitive,  /* whether to normalize for gain and bias */
++  float *dissimilarity)	/* output variable that SumSquared difference of the window */
+ {
+   _FloatWindow imgdiff, gradx, grady;
+   float gxx, gxy, gyy, ex, ey, dx, dy;
+@@ -469,6 +491,9 @@
+       status = KLT_LARGE_RESIDUE;
+   }
+ 
++    // ryanm: compute dissimilarity value -- 200604
++    *dissimilarity = _sumSquareFloatWindow(imgdiff, width, height);
++
+   /* Free memory */
+   free(imgdiff);  free(gradx);  free(grady);
+ 
+@@ -1243,6 +1268,7 @@
+ 	int indx, r;
+ 	KLT_BOOL floatimg1_created = FALSE;
+ 	int i;
++	float dissimilarity;
+ 
+ 	if (KLT_verbose >= 1)  {
+ 		fprintf(stderr,  "(KLT) Tracking %d features in a %d by %d image...  ",
+@@ -1367,7 +1393,8 @@
+ 					tc->min_determinant,
+ 					tc->min_displacement,
+ 					tc->max_residue,
+-					tc->lighting_insensitive);
++					tc->lighting_insensitive,
++					&dissimilarity);
+ 
+ 				if (val==KLT_SMALL_DET || val==KLT_OOB)
+ 					break;
+@@ -1428,7 +1455,8 @@
+ 			} else  {
+ 				featurelist->feature[indx]->x = xlocout;
+ 				featurelist->feature[indx]->y = ylocout;
+-				featurelist->feature[indx]->val = KLT_TRACKED;
++				featurelist->feature[indx]->val = dissimilarity;
++
+ 				if (tc->affineConsistencyCheck >= 0 && val == KLT_TRACKED)  { /*for affine mapping*/
+ 					int border = 2; /* add border for interpolation */
+ 

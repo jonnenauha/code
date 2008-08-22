@@ -1,0 +1,18 @@
+#VRML 1.0
+Material {
+    fields [
+        MFColor         ambientColor,
+        MFColor         diffuseColor,
+        MFColor         specularColor,
+        MFColor         emissiveColor,
+        MFFloat         shininess,
+        MFFloat         transparency
+    ]
+    ambientColor    0.2 0.2 0.2
+    diffuseColor    0.8 0.8 0.8
+    specularColor   0 0 0
+    emissiveColor   0 0 0
+    shininess       0.2
+    transparency    0
+}
+

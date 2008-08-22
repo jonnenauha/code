@@ -1,0 +1,373 @@
+
+#VRML 1.0
+
+# ignore this comment
+AsciiText {
+    fields [
+        MFString        string,
+        SFFloat         spacing,
+        SFEnum          justification,
+        MFFloat         width
+    ]
+    string          ""
+    spacing         1
+    justification   LEFT
+    width           0
+}
+Cone {
+    fields [
+        SFBitMask       parts,
+        SFFloat         bottomRadius,
+        SFFloat         height
+    ]
+    parts           ALL
+    bottomRadius    1
+    height          2
+}
+
+
+Coordinate3 {
+    fields [
+        MFVec3f         point
+    ]
+   point [
+      -98 311.8133 810,
+      -98 311.8133 990,
+      -278 311.8133 990,
+      -278 311.8133 810,
+      -98 503.8133 810,
+      -98 503.8133 990,
+      -278 503.8133 990,
+      -278 503.8133 810
+   ]
+}
+
+Cube {
+    fields [
+        SFFloat         width,
+        SFFloat         height,
+        SFFloat         depth
+    ]
+    width           2
+    height          2
+    depth           2
+}
+
+Cylinder {
+    fields [
+        SFBitMask       parts,
+        SFFloat         radius,
+        SFFloat         height
+    ]
+    parts           ALL
+    radius          1
+    height          2
+}
+
+DirectionalLight {
+    fields [
+        SFBool          on,
+        SFFloat         intensity,
+        SFColor         color,
+        SFVec3f         direction
+    ]
+    on              TRUE
+    intensity       1
+    color           1 1 1
+    direction       0 0 -1
+}
+
+FontStyle {
+    fields [
+        SFFloat         size,
+        SFEnum          family,
+        SFBitMask       style
+    ]
+    size            10
+    family          SERIF
+    style           NONE
+}
+
+Group {
+    fields [ ]
+}
+
+IndexedFaceSet {
+    fields [
+        MFLong          coordIndex,
+        MFLong          materialIndex,
+        MFLong          normalIndex,
+        MFLong          textureCoordIndex
+    ]
+    coordIndex -1
+    materialIndex   -1
+    normalIndex     -1
+    textureCoordIndex   -1
+}
+
+IndexedLineSet {
+    fields [
+        MFLong          coordIndex,
+        MFLong          materialIndex,
+        MFLong          normalIndex,
+        MFLong          textureCoordIndex
+    ]
+    coordIndex      0
+    materialIndex   -1
+    normalIndex     -1
+    textureCoordIndex   -1
+}
+
+Info {
+    fields [
+        SFString        string
+    ]
+    string          "<Undefined Info>"
+
+}
+
+LOD {
+    fields [
+        MFFloat         range,
+        SFVec3f         center
+    ]
+    range           []
+    center          0 0 0
+}
+
+Material {
+    fields [
+        MFColor         ambientColor,
+        MFColor         diffuseColor,
+        MFColor         specularColor,
+        MFColor         emissiveColor,
+        MFFloat         shininess,
+        MFFloat         transparency
+    ]
+    ambientColor    0.2 0.2 0.2
+    diffuseColor    0.8 0.8 0.8
+    specularColor   0 0 0
+    emissiveColor   0 0 0
+    shininess       0.2
+    transparency    0
+}
+
+MaterialBinding {
+    fields [
+        SFEnum          value
+    ]
+    value           DEFAULT
+}
+
+MatrixTransform {
+    fields [
+        SFMatrix        matrix
+    ] 
+    matrix          1 0 0 0
+                    0 1 0 0
+                    0 0 1 0
+                    0 0 0 1
+}
+
+Normal {
+    fields [
+        MFVec3f         vector
+    ]
+    vector          0 0 1
+}
+
+NormalBinding {
+    fields [
+        SFEnum          value
+    ]
+    value           DEFAULT
+}
+
+OrthographicCamera {
+    fields [
+        SFVec3f         position,
+        SFRotation      orientation,
+        SFFloat         focalDistance,
+        SFFloat         height
+    ]
+    position        0 0 1
+    orientation     0 0 1   0
+    focalDistance   5
+    height          2
+}
+
+PerspectiveCamera {
+    fields [
+        SFVec3f         position,
+        SFRotation      orientation,
+        SFFloat         focalDistance,
+        SFFloat         heightAngle
+    ]
+    position        0 0 1
+    orientation     0 0 1   0
+    focalDistance   5
+    heightAngle     0.785398
+}
+
+PointLight {
+    fields [
+        SFBool          on,
+        SFFloat         intensity,
+        SFColor         color,
+        SFVec3f         location
+    ]
+    on              TRUE
+    intensity       1
+    color           1 1 1
+    location        0 0 1
+}
+
+PointSet {
+    fields [
+        SFLong          startIndex,
+        SFLong          numPoints
+    ]
+    startIndex      0
+    numPoints      -1
+}
+
+Rotation {
+    fields [
+        SFRotation      rotation
+    ]
+    rotation        0 0 1   0
+}
+
+Scale {
+    fields [
+        SFVec3f         scaleFactor
+    ]
+    scaleFactor     1 1 1
+}
+
+Separator {
+    fields [
+        SFEnum          renderCulling
+    ]
+    renderCulling   AUTO
+}
+
+ShapeHints {
+    fields [
+        SFEnum          vertexOrdering,
+        SFEnum          shapeType,
+        SFEnum          faceType,
+        SFFloat         creaseAngle
+    ]
+    vertexOrdering  UNKNOWN_ORDERING
+    shapeType       UNKNOWN_SHAPE_TYPE
+    faceType        CONVEX
+    creaseAngle     0.5
+}
+
+Sphere {
+    fields [
+        SFFloat         radius
+    ]
+    radius          1
+}
+
+SpotLight {
+    fields [
+        SFBool          on,
+        SFFloat         intensity,
+        SFVec3f         color,
+        SFVec3f         location,
+        SFVec3f         direction,
+        SFFloat         dropOffRate,
+        SFFloat         cutOffAngle
+    ]
+    on              TRUE
+    intensity       1
+    color           1 1 1
+    location        0 0 1
+    direction       0 0 -1
+    dropOffRate     0
+    cutOffAngle     0.785398
+}
+
+Switch {
+   fields [
+        SFLong          whichChild
+   ]
+   whichChild       -1
+}
+
+Texture2 {
+    fields [
+        SFString        filename,
+        SFImage         image,
+        SFEnum          wrapS,
+        SFEnum          wrapT
+    ]
+    filename        ""
+    image           0 0 0
+    wrapS           REPEAT
+    wrapT           REPEAT
+}
+
+Texture2Transform {
+    fields [
+        SFVec2f         translation,
+        SFFloat         rotation,
+        SFVec2f         scaleFactor,
+        SFVec2f         center
+    ]
+    translation     0 0
+    rotation        0
+    scaleFactor     1 1
+    center          0 0
+}
+
+Transform {
+    fields [
+        SFVec3f         translation,
+        SFRotation      rotation,
+        SFVec3f         scaleFactor,
+        SFRotation      scaleOrientation,
+        SFVec3f         center
+    ]
+    translation     0 0 0
+    rotation        0 0 1   0
+    scaleFactor     1 1 1 
+    scaleOrientation 0 0 1  0
+    center          0 0 0
+}
+
+TransformSeparator {
+    fields []
+}
+
+Translation {
+    fields [
+        SFVec3f         translation
+    ]
+    translation     0 0 0
+}
+
+WWWAnchor {
+    fields [
+        SFString        name,
+        SFString        description,
+        SFEnum          map
+    ]
+    name            ""
+    description     ""
+    map             NONE    
+}
+
+WWWInline {
+    fields [
+        SFString        name,
+        SFVec3f         bboxSize,
+        SFVec3f         bboxCenter
+    ]
+    name            ""
+    bboxSize        0 0 0
+    bboxCenter      0 0 0
+}

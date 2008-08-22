@@ -1,0 +1,1 @@
+diff -q $(find $1 -type d) $(find $2 -type d)
