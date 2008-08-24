@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<abiword version="0.7.9">
+<!-- =====================================================================  -->
+<!-- This file is an AbiWord document.                                      -->
+<!-- AbiWord is a free, Open Source word processor.                         -->
+<!-- You may obtain more information about AbiWord at www.abisource.com     -->
+<!-- You should not edit this file by hand.                                 -->
+<!-- =====================================================================  -->
+
+<!--         Build_ID          = (none) -->
+<!--         Build_Version     = 0.7.9 -->
+<!--         Build_Options     = LicensedTrademarks:On Debug:Off Gnome:Off -->
+<!--         Build_Target      = /space/builds/0956876928/tmp/abi-0.7.9/src/SunOS_5.5.1_sparc32_OBJ/obj -->
+<!--         Build_CompileTime = 18:24:13 -->
+<!--         Build_CompileDate = Apr 27 2000 -->
+
+<styles>
+<s basedon="Normal" followedby="Normal" name="Heading 1" type="P" props="field-font:NULL; font-family:Arial; font-size:17pt; font-weight:bold; keep-with-next:1; margin-bottom:3pt; margin-top:22pt"/>
+<s basedon="Normal" followedby="Normal" name="Heading 2" type="P" props="field-font:NULL; font-family:Arial; font-size:14pt; font-weight:bold; keep-with-next:1; margin-bottom:3pt; margin-top:22pt"/>
+<s basedon="Normal" followedby="Normal" name="Heading 3" type="P" props="field-font:NULL; font-family:Arial; font-size:12pt; font-weight:bold; keep-with-next:1; margin-bottom:3pt; margin-top:22pt"/>
+<s basedon="" followedby="Current Settings" name="Normal" type="P" props="bgcolor:transparent; color:000000; field-font:NULL; font-family:Times New Roman; font-size:12pt; font-stretch:normal; font-style:normal; font-variant:normal; font-weight:normal; line-height:1.0; margin-bottom:0pt; margin-left:0pt; margin-right:0pt; margin-top:0pt; text-align:left; text-decoration:none; text-indent:0in; text-position:normal; widows:2"/>
+<s basedon="Heading 2" followedby="Normal" name="Numbered Heading 2" type="P" props="field-color:transparent; field-font:Arial; list-decimal:. ; list-delim:%L; list-style:Numbered List; margin-left:0.0in; start-value:1; tabstops:0.3in/L0; text-indent:0.0in"/>
+<s basedon="Normal" followedby="Current Settings" name="Plain Text" type="P" props="field-font:NULL; font-family:Courier New"/>
+<s basedon="Numbered Heading 2" followedby="Normal" name="Section Heading 2" type="P" props="field-color:transparent; field-font:Arial; list-delim:Section %L; list-style:Numbered List; margin-left:0.0in; start-value:1; tabstops:0.9in/L0; text-indent:0.0in"/>
+</styles>
+<section>
+<p style="Heading 1"><c props="lang:en-CA">CPSC 559	Assignment 2 Design Document</c></p>
+<p style="Heading 3" props="text-align:right"><c props="lang:en-CA">Ryan McDougall -- 2002</c></p>
+<p level="1" listid="1000858448" parentid="0" style="Section Heading 2" props="field-font:Arial; list-style:Numbered List; margin-left:0.0000in; start-value:1; text-indent:0.0000in"><field type="list_label" props="bgcolor:transparent; color:000000; font-family:Arial; font-size:14pt; font-style:normal; font-weight:bold; lang:en-CA; text-decoration:none; text-position:normal; width:"/><c type="list_label" props="bgcolor:transparent; color:000000; font-family:Arial; font-size:14pt; font-style:normal; font-weight:bold; lang:en-CA; text-decoration:none; text-position:normal; width:">	Design Overview</c></p>
+<p level="1" listid="1000858448" parentid="0" style="Plain Text">	The 0.2 version of BBSystem was redesigned for simplicity and lacks much of the sophistication of the previous system. However, more importantly, the 0.2 revision works to Customer specifications, and is therefore considered complete.</p>
+<p level="1" listid="1000858448" parentid="0" style="Plain Text"></p>
+<p level="1" listid="1000858448" parentid="0" style="Plain Text">	The system is divided into tow major components, the BBSServer.java and BBSClient.java, where are the server and client components respectively. The server is an RMI Remote object, and its entire public interface the exposed via BBSServerRemote interface in the rmiinterface package. The interface includes all functionality, such as login/logout, per user post abilities, group post abilities, and administrative abilities.</p>
+<p level="1" listid="1000858448" parentid="0" style="Plain Text"></p>
+<p level="1" listid="1000858448" parentid="0" style="Plain Text">	The client implements all ( text-based ) user interface and maps client calls to server calls.</p>
+<p level="1" listid="1000858448" style="Section Heading 2" props="field-font:Arial; list-delim:Section %L; list-style:Numbered List; margin-left:0.0000in; start-value:1; text-indent:0.0000in"><field type="list_label" props="bgcolor:transparent; color:000000; font-family:Arial; font-size:14pt; font-style:normal; font-weight:bold; lang:en-CA; text-decoration:none; text-position:normal; width:"/><c type="list_label" props="bgcolor:transparent; color:000000; font-family:Arial; font-size:14pt; font-style:normal; font-weight:bold; lang:en-CA; text-decoration:none; text-position:normal; width:">	Communication Subsystem</c></p>
+<p style="Plain Text" props="text-indent:0.5000in">The BBSServer is and entire Remote object and all of its public methods are exported to clients via its remote interface.</p>
+<p style="Plain Text" props="text-indent:0.5000in"></p>
+<p style="Plain Text" props="text-indent:0.5000in">All BBSystem data is stored server-side and accessed through the remote interface.</p>
+<p level="1" listid="1000858448" style="Section Heading 2" props="field-font:Arial; list-delim:Section %L; list-style:Numbered List; margin-left:0.0000in; start-value:1; text-indent:0.0000in"><field type="list_label" props="bgcolor:transparent; color:000000; font-family:Arial; font-size:14pt; font-style:normal; font-weight:bold; lang:en-CA; text-decoration:none; text-position:normal; width:"/><c type="list_label" props="bgcolor:transparent; color:000000; font-family:Arial; font-size:14pt; font-style:normal; font-weight:bold; lang:en-CA; text-decoration:none; text-position:normal; width:">	Security Subsystem</c></p>
+<p style="Plain Text" props="text-indent:0.5000in">User level security is implemented via a server-side Hashtable which maps usernames to passwords. The client send the username/password pair over the network ( via login() method ) as a serialized java String. The server keys the username and compares the two passwords.</p>
+<p style="Plain Text" props="text-indent:0.5000in"></p>
+<p style="Heading 2" props="margin-left:0.8750in; text-indent:0.0000in">User Subsystem</p>
+<p style="Plain Text">	User and group identities are represented by BBSIdentity class, and stored in a java Hashtable with the human-readable name as the key and the BBSIdentity as the value. BBSGroupIdentity inherits from BBSIdentity, but add support for other identities to join it via a private list of group members.</p>
+<p style="Plain Text">	Modification of identities and other administrative taskls are limited to a single root user.</p>
+<p style="Heading 3" props="margin-left:0.0000in; text-indent:0.5000in"></p>
+<p level="1" listid="1000858448" style="Section Heading 2" props="field-font:Arial; list-delim:Section %L; list-style:Numbered List; margin-left:0.0000in; start-value:1; text-indent:0.0000in"><field type="list_label" props="bgcolor:transparent; color:000000; font-family:Arial; font-size:14pt; font-style:normal; font-weight:bold; lang:en-CA; text-decoration:none; text-position:normal; width:"/><c type="list_label" props="bgcolor:transparent; color:000000; font-family:Arial; font-size:14pt; font-style:normal; font-weight:bold; lang:en-CA; text-decoration:none; text-position:normal; width:">	Design Considerations</c></p>
+<p style="Heading 3" props="margin-left:0.5000in; text-indent:0.0000in"><c type="list_label" props="height:; lang:en-CA">Section 2.1 Multi - Threading</c></p>
+<p style="Plain Text" props="margin-left:0.5000in; text-indent:0.2500in"><c type="list_label" props="height:; lang:en-CA">After careful consideration of the ability for BBSystem on the Java2 platform to scale with Java Threads, our engineers have come to the conclusion that multi-threading the BBSystem offers no scaling advantages. Since all network communication is handled by the Java2 RMI subsystem, and there exists no readily known way to scale RMI with Threads ( except for the multi-threading that Java may or may not inherently provide ), we cannot scale RMI with Threads. We have chosen not to implement any multi-threading in BBSystem, not only because it offers dubious scaling benefits, but because it would introduce unnecessary complexity and possible cause future problems.</c></p>
+<p style="Plain Text" props="margin-left:0.7500in"></p>
+<p style="Heading 3" props="margin-left:0.5000in"><c type="list_label" props="height:; lang:en-CA">Section 2.2 Security</c></p>
+<p style="Plain Text" props="margin-left:0.5000in; tabstops:0.0000in/L0; text-indent:0.2500in"><c type="list_label" props="height:; lang:en-CA">While all due diligence was paid to designing a robust and extensible security framework, it is the analysis of our engineers that security is not a main focus for this project. As such our development effort was constrained to including features and not tightening security. The BBSystem communicates over the RMI default Port, and accepts incoming connections from any address. Attempting to would have increased complexity and development time.</c></p>
+<p style="Plain Text" props="margin-left:0.7500in; tabstops:0.7500in/L0; text-indent:0.0000in"></p>
+<p style="Heading 3" props="margin-left:0.5000in; tabstops:0.5000in/L0; text-indent:0.0000in"><c type="list_label" props="height:; lang:en-CA">Section 2.3 Extra Features</c></p>
+<p style="Plain Text" props="margin-left:0.5000in; tabstops:0.0000in/L0; text-indent:0.2500in"><c type="list_label" props="height:; lang:en-CA">The Customer's decision to base part of the Bid selection process on such as nebulous and undefined concept as "Extra Features" is not only unfair to all the Contract Bidders, who will have their bids subjected to an intentionally undefined criterion, but it is potentially disastrous for the Customer themselves. Since the criterion obviously favors Bidders with extra "polish" on their products over less visible factors like design quality and extensibility, the Customer will end up with nothing more than "Style over Substance" bids. The Customer should reconsider their analysis techniques and consider expending the extra effort to more fully judge the bids.</c></p>
+</section>
+</abiword>

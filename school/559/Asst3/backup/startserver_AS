@@ -1,0 +1,16 @@
+#
+#	Start Script
+#
+
+export CLASSPATH=~/559
+cd ~/559/Asst3
+
+javac EcoServer.java
+rmic -v1.2 Asst3/EcoRemoteChannel\$EcoChannelReceiver
+
+cd ..
+
+java -Djava.security.policy=util/rmi.policy Asst3/EcoServer AS
+
+rm -f Asst3/*.class
+cd ~/559/Asst3

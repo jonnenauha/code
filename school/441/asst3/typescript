@@ -1,0 +1,28 @@
+Script started on Mon Mar 24 21:36:54 2003
+sh-2.05$ make
+g++	-O2 -c main.cc
+g++	 main.o -o netsim
+rm -f core ./*.o
+sh-2.05$ ./netsim top.dat work.dat 1
+10000	9974 ( 99.74 % ) 	26 ( 0.26 % ) 	3.83998	126.899
+sh-2.05$ ./netsim top.dat work.dat 1 2
+10000	9960 ( 99.6 % ) 	40 ( 0.4 % ) 	3.33876	152.006
+sh-2.05$ ./netsim top.dat work.dat 2 3
+10000	9964 ( 99.64 % ) 	36 ( 0.36 % ) 	4.43637	217.401
+sh-2.05$ ./netsim top.dat work.dat 3 4
+10000	9996 ( 99.96 % ) 	4 ( 0.04 % ) 	4.28011	201.699
+sh-2.05$ more answers.txt
+1. Shortest Delay First: This method provides the best average propagation delay, and for obvious reasons since the algorithm optimizes for minimum delay. It a
+lso provides the second best average dropped calls. Therfore I believe that SDPF is the best algorithm for balancing throughput with latency.
+
+2. Shortest Hop First: This method is the easiest and computationaly cheapest, but it also drops the largest amount of calls due to its simplistic decision mec
+hanism which does not properly distribute the calls over the network. Although the delay is decent, it is still a poor choice for an algorithm since SDPF perfo
+rms far better.
+
+3. Least Loaded Path: This method optimizes for path load, a metric which has little regard for delay, yet surprisingly drops a large number of calls. I am sur
+prised because the load ratio metric is sensitive to changes in the call load, and should more dynamically redistribute the load. This result may be a statisti
+cal aberration. Due to its poor delay time and large number of dropped calls, LLP is the worst algorithm under this test.
+
+4. Most Free Circuit: This method dropped to a staggeringly small amount of calls, only 4. The delay is the highest but, the throughput more than makes up for 
+it. This may be because there is a greater correlation between throughput and free circuits, than throughput and least load. For example, a channel with a capa
+city of 1 could have 0 load, but very little maximum bandwidth. For situations that require high reliability MFC is highly recommended.

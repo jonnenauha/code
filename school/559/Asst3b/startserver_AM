@@ -1,0 +1,20 @@
+#
+#	Start Script
+#
+
+echo 'Starting AM server'
+
+export CLASSPATH=~/559
+cd ~/559/Asst3b
+
+javac EcoServer.java
+rmic -v1.2 Asst3b/EcoRemoteChannel\$EcoChannelReceiver
+
+cd ..
+
+java -Djava.security.policy=util/rmi.policy Asst3b/EcoServer AM AS
+
+rm -f Asst3b/*.class
+cd ~/559/Asst3b
+
+echo 'Ending AM server'

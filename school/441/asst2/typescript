@@ -1,0 +1,63 @@
+Script started on Mon Mar 03 11:24:03 2003
+sh-2.05$ make
+g++	-g -c main.cc
+g++	-g -c util.cc
+g++	 main.o util.o -o bozon
+rm -f core ./*.o
+sh-2.05$ cat README 
+To make: type make
+To run: type ./bozon [population] [time period] [mean sleep] [mean yodel]
+
+Output format: [population] [%silent] [%melodious] [%screechy]
+sh-2.05$ ./bozon 5 100000 100 10
+5	0.63506	0.30122	0.06372
+sh-2.05$ echo Changed to Fixed Length Yodel
+Changed to Fixed Length Yodel
+sh-2.05$ make
+g++	-g -c main.cc
+g++	-g -c util.cc
+g++	 main.o util.o -o bozon
+rm -f core ./*.o
+sh-2.05$ ./bozon 5 100000 100 10
+5	0.61642	0.31299	0.07059
+sh-2.05$ ./bozon 9 100000 100 10
+9	0.42173	0.3814	0.19687
+sh-2.05$ ./bozon 10 100000 100 10
+10	0.38224	0.38457	0.23319
+sh-2.05$ ./bozon 11 100000 100 10
+11	0.34812	0.38494	0.26694
+sh-2.05$ ./bozon 12 100000 1001  10
+12	0.31778	0.38026	0.30196
+sh-2.05$ echo Therefore the optimal size is 11
+Therefore the optimal size is 11
+sh-2.05$ echo Changed back to Random Duration
+Changed back to Random Duration
+sh-2.05$ make
+g++	-g -c main.cc
+g++	-g -c util.cc
+g++	 main.o util.o -o bozon
+rm -f core ./*.o
+sh-2.05$ ./bozon 1 100000 1 200 10
+1	0.95383	0.04617	0
+sh-2.05$ ./bozon 1 100000 200 10
+2	0.90805	0.09014	0.00181
+sh-2.05$ ./bozon 2 100000 200 10
+3	0.86544	0.12948	0.00508
+sh-2.05$ ./bozon 3 100000 200 10
+4	0.83654	0.15211	0.01135
+sh-2.05$ ./bozon 4 100000 200 10
+8	0.68503	0.26791	0.04706
+sh-2.05$ ./bozon 8 100000 200 10
+16	0.47715	0.36661	0.15624
+sh-2.05$ ./bozon 16 100000 200 10
+32	0.21803	0.34062	0.44135
+sh-2.05$ ./bozon 32 100000 200 10
+64	0.05019	0.14792	0.80189
+sh-2.05$ ./bozon 64 100000 200 10
+128	0.00657	0.01714	0.97629
+sh-2.05$ echo cheers!
+cheers!
+sh-2.05$ exit
+exit
+
+script done on Mon Mar 03 11:32:19 2003

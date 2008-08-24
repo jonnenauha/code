@@ -1,0 +1,7 @@
+1. Shortest Delay First: This method provides the best average propagation delay, and for obvious reasons since the algorithm optimizes for minimum delay. It also provides the second best average dropped calls. Therfore I believe that SDPF is the best algorithm for balancing throughput with latency.
+
+2. Shortest Hop First: This method is the easiest and computationaly cheapest, but it also drops the largest amount of calls due to its simplistic decision mechanism which does not properly distribute the calls over the network. Although the delay is decent, it is still a poor choice for an algorithm since SDPF performs far better.
+
+3. Least Loaded Path: This method optimizes for path load, a metric which has little regard for delay, yet surprisingly drops a large number of calls. I am surprised because the load ratio metric is sensitive to changes in the call load, and should more dynamically redistribute the load. This result may be a statistical aberration. Due to its poor delay time and large number of dropped calls, LLP is the worst algorithm under this test.
+
+4. Most Free Circuit: This method dropped to a staggeringly small amount of calls, only 4. The delay is the highest but, the throughput more than makes up for it. This may be because there is a greater correlation between throughput and free circuits, than throughput and least load. For example, a channel with a capacity of 1 could have 0 load, but very little maximum bandwidth. For situations that require high reliability MFC is highly recommended.

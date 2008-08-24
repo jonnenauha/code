@@ -1,0 +1,49 @@
+<!-- ================================================================================  -->
+<!-- This HTML file was created by AbiWord.                                            -->
+<!-- AbiWord is a free, Open Source word processor.                                    -->
+<!-- You may obtain more information about AbiWord at www.abisource.com                -->
+<!-- ================================================================================  -->
+
+<!--         Build_Version     = 0.7.9 -->
+<!--         Build_Options     = LicensedTrademarks:On Debug:Off Gnome:Off -->
+<!--         Build_Target      = /space/builds/0956876928/tmp/abi-0.7.9/src/SunOS_5.5.1_sparc32_OBJ/obj -->
+<!--         Build_CompileTime = 18:24:13 -->
+<!--         Build_CompileDate = Apr 27 2000 -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title>AbiWord Document</title>
+<style type="text/css">
+<!-- 
+ P.norm { margin-top: 0pt; margin-bottom: 0pt } 
+ -->
+</style>
+</head>
+<body>
+<div>
+<h1>CPSC 559 Assignment 1 Design Document</h1>
+<p class="norm" align="right">Ryan McDougall -- 209207</p>
+<h3><span style="text-decoration: underline">Overview</span></h3>
+<p class="norm">	The submitted package includes four Java 2 source files: WebServer.java, WebServerBrowser.java, SocketBrowser.java, and URLBrowser.java.</p>
+<p class="norm"></p>
+<p class="norm">	URLBrowser.java implements Part 1a ( URL based Browser )</p>
+<p class="norm">	SocketBrowser.java implements Part 1b ( Sockets based Browser )</p>
+<p class="norm">	WebServer.java implements Part 2a ( Multi-Threaded Web Server )</p>
+<p class="norm">	WebServerBrowser.java implements Part 2b ( Corresponding Client Browser )</p>
+<p class="norm"></p>
+<p class="norm">Each file attempts to be simply designed and self documenting. If you have any suggestions, feel free to contact ryanm@cpsc.ucalgary.ca with your comments.</p>
+<h3><span style="text-decoration: underline">Com</span><span style="text-decoration: underline">paring the</span><span style="text-decoration: underline"> Browsers</span></h3>
+<p class="norm">	The URL Browser uses the functionality provided by the Java URL class to send arbitrary HTTP commands to an HTTP Server. To open bi-directional communication with the server it necessary to call the openConnection() method which returns an HttpURLConnection, which in turn provides input and output Streams. The URL class attempts to hide details of client-server interaction in order to simplify common distributed resource allocation tasks. It simplicity however makes it less flexible for other forms of client server communication.</p>
+<p class="norm">	The URL class is not optimized for bi-directional communication, so one should prefer to use it for simple, uni-directional retrieval of remote resources.</p>
+<p class="norm"></p>
+<p class="norm">	The Socket Browser uses the Java implementation of the Berkeley Socket interface within the JVM to easily provide bi-directional communication, specifically to issue arbitrary HTTP commands to an HTTP Server. The Socket interface is well known, and should be preferred over the URL class for more complicated forms of client-server communication.</p>
+<h3><span style="text-decoration: underline">Use of Important Java Me</span><span style="text-decoration: underline">thods</span></h3>
+<p class="norm">	All important Objects and Methods are described at http://java.sun.com or documented within the source code proper. Please contact the author at ryanm@cpsc.ucalgary.ca if you have any questions or concerns.</p>
+<h3><span style="text-decoration: underline">Advantages of Stream-based Network Communication</span></h3>
+<p class="norm">	Stream based communication provides a higher level interface to lower level, packet based protocols, and as such may provide a more intuitive and simple metaphor for the client programmer. Streams hide buffering and layering issues that may only serve to complicate an high level system.</p>
+<p class="norm">	</p>
+<p class="norm">	However, this approach may hinder some flexibility for performance sensitive applications.</p>
+</div>
+</body>
+</html>

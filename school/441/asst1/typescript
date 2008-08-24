@@ -1,0 +1,47 @@
+Script started on Mon Feb 10 16:55:02 2003
+sh-2.05$ make
+g++	-g -c main.cc
+g++	-g -c physical.cc
+g++	-g -c datalink.cc
+g++	-g -c packet.cc
+g++	 main.o physical.o datalink.o packet.o -o ethersim
+rm -f core ./*.o
+sh-2.05$ ./ethersim
+
+	Part A
+NC0: Dropping frame: NC0 -> NS0 : srv_0
+NC1: Dropping frame: NC0 -> NS0 : srv_0
+Hello!!
+NC1: Dropping frame: NS0 -> NC0 : cli_0
+NS0: Dropping frame: NS0 -> NC0 : cli_0
+I hear you.
+
+	Part B
+NC0: Dropping frame: NC0 -> NS0 : srv_0
+NC1: Error in frame: NC0 -> NS0 : trv_0
+Hello!!
+NC1: Dropping frame: NS0 -> NC0 : cli_0
+NS0: Dropping frame: NS0 -> NC0 : cli_0
+I hear you.
+
+	Part C
+NC0: Dropping frame: NC0 -> NS0 : srv_0
+NC1: Error in frame: NC0 -> OS0 : srv_0
+Hello!!
+NC1: Dropping frame: NS0 -> NC0 : cli_0
+NS0: Dropping frame: NS0 -> NC0 : cli_0
+I hear you.
+
+	Part B
+NC0: Dropping frame: NC0 -> NS0 : srv_0
+NC1: Dropping frame: NC0 -> NS0 : srv_0
+Hello!!
+NC0: Error in frame: NS0 -> NC0 : dli_0
+NC1: Dropping frame: NS0 -> NC0 : cli_0
+NS0: Dropping frame: NS0 -> NC0 : cli_0
+sh-2.05$ cheers!
+sh: cheers!: command not found
+sh-2.05$ exit
+exit
+
+script done on Mon Feb 10 16:55:22 2003

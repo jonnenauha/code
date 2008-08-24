@@ -1,0 +1,9 @@
+#! /usr/local/bin/bash
+
+cd ~/559
+
+javac Asst2/BBSClient.java
+
+java -Djava.security.policy=Asst2/bbs.policy Asst2/BBSClient giraffe
+
+cd Asst2

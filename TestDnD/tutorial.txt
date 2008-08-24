@@ -1,0 +1,65 @@
+=== Introduction ===
+
+Coneceptually, adding drag and drop to your GTK+ 2.0 application is very simple. In practise however, it requires some effort and understanding. Also GTK+ is a powerful and flexible framework that will let you do many cool things with drag-and-drop, and even multiple ways the get the same effect. Therefore we are going to concentrate on how to get the most simple, general, and correct drag-and-drop support, then let you add in the details.
+
+GTK+ was first developed for the X11 system, and as such it's drag and drop implementation is highly influenced by X's "selection" method of inter-client communitcation; in fact this is exactly what the Unix port of GTK+ uses to transport drag and drop information. If you find yourself helplessly confused during the course of implementing your application's drag and drop, you might consider finding a copy of the X11 Xlib Programming Manual.
+
+=== Overview ===
+
+When the user initiates a (drag-and-drop) DnD operation, they are choosing a 'source' by picking and dragging from a widget on the screen, and choosing a 'destination' by dragging and dropping on another widget on the screen. The two widgets are then expected to agree the meaning of this action, and communicate some sort of data. 
+
+Since its possible that widgets can't agree on a meaning, such as DnDing a panel applet into a text editor, or that they can't agree on a data type/protocol, such as sending a string when an image is expected, we must ensure we let GTK+ know about which widgets will accept DnDs and what data types they can use.
+
+Here we have two widgets, Source and Destination, which communicate with each other via GTK+'s signal system. When a object is dropped on the Destination, the handler for the "drop" signal chooses the type of data (such as integer, string, bytes, etc.) that it would like, and asks GTK+ to ask the Source for the data. Then the handler for the "get data" signal tries to convert its data into a form suitable to the Destination as best it can, and then sends it back via GTK+. Finally the handler for the "received data" signal checks that the data is acceptable and finishes the operation.
+
+=== Drag and Drop with GTK+ ===
+
+Before a GTK+ widget can become either a source or destination for a DnD, it must be set up to let GTK+ know that it should allow DnD operations on it, to listen to the certain signals, and to know what set of data types, called targets, it can accept. This is done with gtk_drag_dest/source_set functions.
+
+A Target is a name given to a named type of data that is supported by a source or destination -- hopefully both. GTK+ selections use the name to negotiate a common data type or format. The Source then places a pointer to the formatted data as an array of bytes, which is then copied as such and given to the Destination. The formatting information in the Target should give the Destination enough information to decode the memory given to it.
+
+Source and Destination are able to coordinate the types of data they support by drawing on a common list of GtkTargets. The list is an array of GtkTargetEntrys, and is the sole protocol for negotiating types between widgets or applications, and therefore the GtkTargetEntry for any application you wish to interact with should be carefully observed.
+
+Unfortunately while researching this tutorial I ran across some information that at best is misleading, and at worst just plain wrong. Therefore I would like to describe in more detail what happens during a DnD with a simple schematic.
+
+"signal-name"
+[function_call]
+(user action)
+
+Source                        GTK+                         Destination
+------                        ----                         -----------
+                              (user begins drag)
+[begin_cb]<-------------------"drag-begin"
+                              (user drops)
+                              "drag-leave"---------------->[leave_cb]
+                              "drag-drop"----------------->[drop_cb]
+                              [gtk_drag_get_data]<---------[drop_cb]
+[data_cb]<--------------------"drag-data-get"
+[data_cb]-------------------->[gtk_selection_data_set]
+                              "drag-data-received"-------->[received_cb]
+                              [gtk_drag_finish]<-----------[received_cb]
+[end_cb]<---------------------"drag-end"
+
+In addition to the above, Destination is capable of receiving the "drag-motion" signal, which is emitted whenever a DnD is over the destination. Also, the Source is capable of receiving as "drag-data-delete" which is emitted by gtk_drag_finish, and is used to implement "Move" DnD operations by letting the Source know it is safe to delete the data it just sent.
+
+The signals we are most interested in, and are the minimum necessary for a basic DnD, are "drag-drop", "drag-data-get", and "drag-data-received". 
+
+The purpose of the handler for "drag-drop" is firstly to decide if it wants to accept the drop. For example a widget may have a complicated layout, and may decide that the drop was not on a valid part of the widget. If it wishes the operation to continue, it must return TRUE when finished. Next it must choose what type of data it prefers the source to deliver. Lastly it initiates the request by calling gtk_drag_get_data.
+
+The purpose of the handler for "drag-data-get" is first to attempt to convert its data into the type requested by the Destination, or failing to do so, sending an error as a safe type such as a string. Finally it fills in a GtkSelectionData structure with the data and its formatting information using gtk_selection_data_set. GtkSelectionData is based on X's selection mechanism which passes data between X clients using named "properties". A property name is called an "atom", and in practise is simply a integer handle to describe some chunk of memory on the X server. X properties are only capable of storing data in blocks of 8, 16, or 32 bit units, which means that information other than integers, byte-strings, UTF-8 text, URIs, or PixBufs, must be preformatted into an array by your application.
+
+The purpose of the handler for "drag-data-received" is first to check that the data is there and in a format acceptable, then decode the data pointer sent to it either manually or using a corresponding gtk_selection_data_get function. Finally it should call gtk_drag_finish indicating whether the DnD succeeded, and whether Source should delete the data (if the DnD was a GDK_ACTION_MOVE). This will cause GTK+ to emit the "drag-data-delete" signal if the delete parameter is set to TRUE, and finally "drag-end".
+
+=== Step by Step ===
+
+1. Decide the types of targets your DnD will support, and fill in the entries in the TargetEntry list. The first field of a TargetEntry is a string representing the target name. The second is for GtkTargetFlags which allow you to restrict a DnD operation to the same application, or even the same widget. The third is a integer representing the target name, which is passed to various signal handlers to identify the target. This allows you to avoid a costly string operation, but increases the odds of accidentally colliding with a differnt target that has the same integer name.
+
+2. Decide which widgets will be source and destination, then call gtk_drag_dest/source_set respectively. For both functions the first parameter is the widget you wish to set as a destination or source; however some restrictions apply to the widgets able to serve as such, for example all dest/source widgets must have an associated X window. The third and fourth parameters are for informing the widget about its list of GtkTargetEntrys as created in step 1. The fifth parameter lets your signal handlers know how they should treat the data that is being passed by a DnD. For example, during a GDK_ACTION_MOVE the Destination should emit a "drag-data-delete" signal up successful completion, which your Source should handle by deleting it's copy of the data.
+
+The second parameter of gtk_drag_dest_set allows you to customize the behaviour of the destination on a DnD somewhat. 
+
+The second parameter of gtk_drag_source_set allows you to specify what keys or buttons will allow a DnD operation to begin.
+
+3. Connect the Destination to the "drag-drop" and "drag-data-received" singals, and the Source to the "drag-data-get" signal, with appropriate handlers.
+
+4. Write those handlers. Exactly how to do so is rather complicated, however I have attempted to sketch above the responsibilities of those handlers, and have written the sample code to get things done below.

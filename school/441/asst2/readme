@@ -1,0 +1,20 @@
+To make: type make
+To run: type ./bozon [population] [time period] [mean sleep] [mean yodel]
+
+Output format: [population] [%silent] [%melodious] [%screechy]
+
+Answers:
+
+	b) Melodiousness increased by about 1%
+	c) The optimal size is 11
+	d) Table:
+		size	silent	melody	screech
+
+		1	0.95383	0.04617	0.0
+		2	0.90805	0.09014	0.00181
+		4	0.83654	0.15211	0.01135
+		8	0.68503	0.26791	0.04706
+		16	0.47715	0.36661	0.15624
+		32	0.21803	0.34062	0.44135
+		64	0.05019	0.14792	0.80189
+		128	0.00657	0.01714	0.97629

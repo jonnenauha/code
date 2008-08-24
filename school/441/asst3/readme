@@ -1,0 +1,14 @@
+to build
+
+> make
+
+to run
+
+> ./netsim top.dat work.dat <router>
+
+where 
+
+SDPF = 1
+SHPF = 2
+LLC  = 3
+MFC  = 4

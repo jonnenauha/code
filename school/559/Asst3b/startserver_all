@@ -1,0 +1,10 @@
+#
+#	Master starter
+#
+
+cd ~/559
+
+Asst3/startserver_AF &
+Asst3/startserver_AM &
+Asst3/startserver_AS &
+Asst3/startserver_EU &

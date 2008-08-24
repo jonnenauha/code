@@ -1,0 +1,17 @@
+#
+#	Start Script
+#
+
+echo 'Starting EU server'
+
+export CLASSPATH=~/559
+cd ~/559/Asst4
+
+javac EcoServer.java
+rmic -v1.2 Asst4.EcoRemoteChannel\$EcoChannelReceiver
+
+java -Djava.security.policy=../util/rmi.policy Asst4.EcoServer EU localhost AF localhost AM localhost AS localhost
+
+rm -f ./*.class
+
+echo 'Ending EU server'

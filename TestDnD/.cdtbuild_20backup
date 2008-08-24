@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 2.0.0?>
+
+<ManagedProjectBuildInfo>
+<target id="TestDnD.cdt.managedbuild.target.gnu.exe.769815377" name="Executable (Gnu)" parent="cdt.managedbuild.target.gnu.exe" isAbstract="false" artifactName="TestDnD" isTest="false" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser">
+<configuration id="cdt.managedbuild.config.gnu.exe.debug.780588346" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+<toolReference id="cdt.managedbuild.tool.gnu.c.compiler" command="gcc" outputPrefix="" outputFlag="-o" outputs="o">
+<optionReference id="gnu.c.compiler.option.optimization.level" defaultValue="gnu.c.optimization.level.none"/>
+<optionReference id="gnu.c.compiler.option.debugging.level" defaultValue="gnu.c.debugging.level.max"/>
+<optionReference id="gnu.c.compiler.option.misc.other" defaultValue="-c -fmessage-length=0 `pkg-config --cflags gtk+-2.0` `pkg-config --cflags gtk+-2.0` `pkg-config --cflags gtk+-2.0`"/>
+</toolReference>
+<toolReference id="cdt.managedbuild.tool.gnu.cpp.compiler" command="g++" outputPrefix="" outputFlag="-o" outputs="o">
+<optionReference id="gnu.cpp.compiler.option.optimization.level" defaultValue="gnu.cpp.compiler.optimization.level.none"/>
+<optionReference id="gnu.cpp.compiler.option.debugging.level" defaultValue="gnu.cpp.compiler.debugging.level.max"/>
+</toolReference>
+<toolReference id="cdt.managedbuild.tool.gnu.c.linker" command="gcc" outputPrefix="" outputFlag="-o" outputs="">
+<optionReference id="gnu.c.link.option.ldflags" defaultValue=" `pkg-config --libs gtk+-2.0` `pkg-config --libs gtk+-2.0` `pkg-config --libs gtk+-2.0` `pkg-config --libs gtk+-2.0`"/>
+</toolReference>
+</configuration>
+<configuration id="cdt.managedbuild.config.gnu.exe.release.237567503" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
+<toolReference id="cdt.managedbuild.tool.gnu.c.compiler" command="gcc" outputPrefix="" outputFlag="-o" outputs="o">
+<optionReference id="gnu.c.compiler.option.optimization.level" defaultValue="gnu.c.optimization.level.most"/>
+<optionReference id="gnu.c.compiler.option.debugging.level" defaultValue="gnu.c.debugging.level.none"/>
+</toolReference>
+<toolReference id="cdt.managedbuild.tool.gnu.cpp.compiler" command="g++" outputPrefix="" outputFlag="-o" outputs="o">
+<optionReference id="gnu.cpp.compiler.option.optimization.level" defaultValue="gnu.cpp.compiler.optimization.level.most"/>
+<optionReference id="gnu.cpp.compiler.option.debugging.level" defaultValue="gnu.cpp.compiler.debugging.level.none"/>
+</toolReference>
+</configuration>
+</target>
+</ManagedProjectBuildInfo>

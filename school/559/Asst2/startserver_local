@@ -1,0 +1,17 @@
+#! /usr/local/bin/bash
+
+export CLASSPATH=~/559
+
+cd ~/559/Asst2
+
+rm -rf ./*.class
+
+javac BBSServer.java
+
+rmic -v1.2 Asst2.BBSServer
+
+cd ..
+
+java -Djava.security.policy=Asst2/bbs.policy Asst2/BBSServer localhost
+
+cd ~/559/Asst2

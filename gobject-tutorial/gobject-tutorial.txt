@@ -1,0 +1,779 @@
+
+<?xml version="1.0"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+
+<article>
+GObject Tutorial
+Copyright Ryan McDougall (2004)
+
+Purpose
+-----
+This document is used for two purposes: one is as a tutorial on learning Glib's GObject Type System, and the other is a step-by-step how-to for using the system. The tutorial proceeds from the point of view of designing an Object-Oriented type system in C, where GObject is the presumed solution. It is thought that this manner of presenting the material will better justify the form that the library currently takes, and help explain the steps required use it. The how-to is presented after the tutorial in a step-by-step, matter-of-fact, form with no explanations, so that it will be useful to the merely pragmatic programmer.
+
+Audience
+-----
+The tutorial is meant for those who are familiar with OO concepts, but are just beginning to learn GObject or GTK+. I will assume previous knowledge of an OO'ed language, and a basic command of C.
+
+Motivation
+-----
+While writing an OO system in a language that doesn't support it may sound like a foolish exercise in masochism to some, there are indeed some good reasons why one would want to do such a thing. While I will not try to justify the authors' decision, and will assume that the reader has some good reason for using Glib, I will point out some important features of the system: 
+- C is the most portable programming language
+- system is fully dynamic, so types can be added at run-time
+- system is more extensible than a standard language, so new features can be added quickly
+
+In OO languages object oriented features and abilities are a matter of syntax. However since C doesn't support OO natively, the GObject system has to graft on object orientation manually. Often this requires some tedious, or occasionally mystifying things in order to accomplish this goal. It is my intention to enumerate all the necessary steps and incantations necessary to make this process work; and hopefully even elaborate on what it means to your program.
+
+1. Creating a single Object with no Inheritance
+
+Design
+-----
+In OO, an object consists of two types of members bound under one object reference: data fields and method functions. One way to accomplish this in C is with C structs, where data fields are regular public members and methods are implemented as function pointers. This implementation however has several serious flaws: awkward syntax, type-safety, and lack of encapsulation to name a few. However there is more practical problem -- it is a serious waste of space. Every instance object needs a 4-byte pointer for each of its methods; all of which will be identical class wide, and thus totally redundant. That is to say if we have a class with only four methods, and a program with 1000 instantiation objects of that class, we are wasting almost 16KB. Clearly we'd be better off memory-wise if we only kept one copy of those pointers in a table that could be accessed by any object in its class.
+
+Such as table is called a virtual method table (vtable), and one copy is kept in memory by the GObject system for each class. When you want to call a virtual method, you must ask the system to find the object's vtable; which as we have said above is just a struct with function pointers. With this you can now dereference the pointer and thus call the method. 
+
+<definition>
+We will call these two types "instance struct" and "class struct", and instantiations of those structs "instance objects" and "class objects" respectively. The combination of the two structs as a conceptual unit will be called a "class" and an instantiation of that class will be called an "object".
+</definition>
+
+The reason why functions given by this process are called "virtual" is because it dynamically looks up the appropriate function pointer at run-time and thus allows inherited classes to override a class method (by simply assigning a new function pointer to the corresponding entry in the vtable). This allows derived objects to behave correctly when cast to a base class, and corresponds to what we know of virtual methods in C++. 
+
+<convention>
+Although this saves space and allows virtual methods, it also means that methods can no longer be tied syntactically to an object via the dot operator.Therefore we will use the convention that class methods will be called on objects as follows:
+
+NAMESPACE_TYPE_METHOD (OBJECT*, PARAMETERS)
+</convention>
+
+Non-virtual methods will be implemented inside a regular C function, and virtual functions will be implemented by calling the appropriate method from the vtable inside a regular C function. Private methods will be implemented within the source file, but not be exported via the header file. 
+
+<notice>
+While OO normally uses information hiding as part of encapsulation, there is no easy way to hide private members in C. One method is to put your private members into a separate struct that is defined in the source file only, then place a pointer to the private class in your public object struct. However, in a open-source world this is small protection against a user determined to do the wrong thing. Most developers simply label with a comment those members they wish to protect as private, and hope the user respects the distinction.
+</notice>
+
+At this point we have two distinct structs, and no obvious way to find to get the proper vtable given an instantiated object. As we implied above, it is the system's responsibility to do so, and it is able to handle this only by requiring us to register the types we create. The system also requires us to register both (instance and class) structs' initialization and finalization functions (and some other important information), which will allow the system to properly instantiate our objects. The system keeps track of our objects by enumerating all types registered with it, and requiring that all instance objects start with a pointer to its own class vtable, and each vtable start with the number that corresponds to its enumerated type.
+
+<notice>
+The type system requires that all types' instance and class structs start with with a special struct. In the case of instance structs, this struct is basically just a pointer to the type's class object. Since C guarantees that the first member declared in a struct is also the first found in memory, one can get the class object quickly by simply casting the instance object. Since the type system also requires that we declare the parent struct as the first member when we use inheritance, this same feature means that we need only declare this special struct once in the parent class, and we can always find the vtable of any instance object via a cast.
+</notice>
+
+Lastly we need some functions to define how our objects' lifetimes are managed: a function to call when we wish to create a class object, a function to call when we wish to create an instance object, and a function to call when we are finished with a class object. We do not include a function for finalizing instance objects because instance memory management is generally a complicated problem, and we wish to leave this up to higher levels of code to handle.
+
+Code (header)
+-----
+
+<step>
+Create "C-style" objects using the struct keyword to implement our instance and class objects.
+</step>
+
+<notice>
+We prepend an underscore to the name of our struct, then add a forward typedef which gives our struct a proper name. This is due to the grammar of C, which won't let you declare SomeObject pointers inside SomeObject (which is handy for such things as linked lists). We have also created an artificial namespace called "Some", as described by our convention above.
+</notice>
+
+/* Our "Instance struct" defines all the data fields that make our object unique. */
+typedef struct _SomeObject SomeObject;
+struct _SomeObject
+{
+	GTypeInstance	gtype;
+
+	gint 		m_a;
+	gchar*		m_b;
+	gfloat		m_c;
+};
+
+/* Our "Class struct" defines all the method functions that our objects will share. */
+typedef struct _SomeObjectClass SomeObjectClass;
+struct _SomeObjectClass
+{
+	GTypeClass	gtypeclass;
+
+	void		(*method1)	(SomeObject *self, gint);
+	void		(*method2)	(SomeObject *self, gchar*);
+};
+
+<step>
+Declare the function that will both register our type in the system upon first use, then thereafter will return the unique number that the system uses to track the types we declare. We will call this function get_type and have it return a GType, which is the integral type the system declares to identify registered types. Since this function is specific to our type SomeObject by design and definition, we prepend "some_object_".
+</step>
+
+/* This method returns the GType associated with our new object type. */
+GType	some_object_get_type (void);
+
+<step>
+Declare the functions which manage our objects' lifetimes; that is they set up an object on instantiation, and tear it down on finalization.
+</step>
+
+/* These are the Class/Instance Initialize/Finalize functions. Their signature is determined in gtype.h. */
+void	some_object_class_init		(gpointer g_class, gpointer class_data);
+void	some_object_class_final		(gpointer g_class, gpointer class_data);
+void	some_object_instance_init	(GTypeInstance *instance, gpointer g_class);
+
+<step>
+Declare our class methods using the C function convention we defined above.
+</step>
+
+/* All these functions are methods of SomeObject. */
+void	some_object_method1 (SomeObject *self, gint);	/* virtual */
+void	some_object_method2 (SomeObject *self, gchar*);	/* virtual */
+void	some_object_method3 (SomeObject *self, gfloat);	/* non-virtual */
+
+<step>
+Create some boiler-plate code which will make our code comply to existing standards and generally make our lives easier.
+</step>
+
+/* Handy macros */
+#define SOME_OBJECT_TYPE		(some_object_get_type ())
+#define SOME_OBJECT(obj)		(G_TYPE_CHECK_INSTANCE_CAST ((obj), SOME_OBJECT_TYPE, SomeObject))
+#define SOME_OBJECT_CLASS(c)		(G_TYPE_CHECK_CLASS_CAST ((c), SOME_OBJECT_TYPE, SomeObjectClass))
+#define SOME_IS_OBJECT(obj)		(G_TYPE_CHECK_TYPE ((obj), SOME_OBJECT_TYPE))
+#define SOME_IS_OBJECT_CLASS(c)		(G_TYPE_CHECK_CLASS_TYPE ((c), SOME_OBJECT_TYPE))
+#define SOME_OBJECT_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj), SOME_OBJECT_TYPE, SomeObjectClass))
+
+Code (source)
+-----
+Now we can move on to implementing in the source file what we've just declared. 
+
+<notice>
+Since our virtual methods are just function pointers, we have to create some normal C functions that actually reside in addressable memory (declared as ending in "_impl" and *not* exported in the header), which actually implement the code we want to point to.
+</notice>
+
+<notice>
+All functions preceded by "some_object_" are specific to SomeObject by definition; usually because we explicitly cast various pointers to SomeObject, or make use of some other class specific feature.
+</notice>
+
+<step>
+Implement the code corresponding to our virtual methods.
+</step>
+
+/* Implementation of virtual functions. */
+void	some_object_method1_impl (SomeObject *self, gint a)
+{
+	self->m_a = a;
+	g_print ("Method1: %i\n", self->m_a);
+}
+
+void	some_object_method2_impl (SomeObject *self, gchar* b)
+{
+	self->m_b = b;
+	g_print ("Method2: %s\n", self->m_b);
+}
+
+<step>
+Implement the code for all public methods. In the case of virtual methods, we must use the macro "GET_CLASS" to ask the type system to return the class object so we can access the vtable where our virtual methods reside. If the method is non-virtual, we just write the code.
+</step>
+
+/* Public methods. */
+void	some_object_method1 (SomeObject *self, gint a)
+{
+	SOME_OBJECT_GET_CLASS (self)->method1 (self, a);
+}
+
+void	some_object_method2 (SomeObject *self, gchar* b)
+{
+	SOME_OBJECT_GET_CLASS (self)->method2 (self, b);
+}
+
+void	some_object_method3 (SomeObject *self, gfloat c)
+{
+	self->m_c = c;
+	g_print ("Method3: %f\n", self->m_c);
+}
+
+<step>
+Implement the code for initialization/finalization. We are given generic pointers by the system (that we trust points to a proper object), so we must cast them to the appropriate type before we can do anything.
+</step>
+
+/* This is called when the class object is created. */
+void	some_object_class_init		(gpointer g_class, gpointer class_data)
+{
+	SomeObjectClass	*this_class	= SOME_OBJECT_CLASS (g_class);
+	
+	/* fill in the class struct members (in this case just a vtable) */
+	this_class->method1 = &some_object_method1_impl;
+	this_class->method2 = &some_object_method2_impl;
+}
+
+/* This is called when the class object is no longer used. */
+void	some_object_class_final		(gpointer g_class, gpointer class_data)
+{
+	/* No class finalization needed since the class object holds no 
+	pointers or references to any dynamic resources which would need 
+	to be released when the class object is no longer in use. */
+}
+
+/* This is called when a instance object is created. The instance's class is passed as g_class. */
+void	some_object_instance_init	(GTypeInstance *instance, gpointer g_class)
+{
+	SomeObject *this_object = SOME_OBJECT (instance);
+
+	/* fill in the instance struct members */
+	this_object->m_a = 42;
+	this_object->m_b = 3.14;
+	this_object->m_c = NULL;
+}
+
+<step>
+Implement a function for informing the caller of SomeObject's GType. The first time this function is run, it determines the GType by fully registering SomeObject with the system. Thereafter the GType is stored in a static variable, and returns without any processing. While its possible to register the type in a separate function, this implementation ensures that the type is always registered before its used, which is usually when the first object is instantiated.
+</step>
+
+/* Since there is no base class to derive from, base_init/finalize are NULL */
+GType	some_object_get_type (void)
+{
+	static GType type = 0;
+
+	if (type == 0) 
+	{
+		/* This is the structure that the system uses to fully describe
+		how a type should be created, initialized and finalized. */
+
+		static const GTypeInfo type_info = 
+		{
+			sizeof (SomeObjectClass),
+			NULL,				/* base_init */
+			NULL,				/* base_finalize */
+			some_object_class_init,		/* class_init */
+			some_object_class_final,	/* class_finalize */
+			NULL,				/* class_data */
+			sizeof (SomeObject),
+			0,				/* n_preallocs */
+			some_object_instance_init	/* instance_init */
+    		};
+
+		/* Since our type has no parent, it is considered 
+		"fundamental", and we have to inform the system that our
+		type is both classed (unlike say a float, int, or pointer),
+		and is instantiable (the system can create instance objects.
+		for example, Interfaces or Abstract classes are not 
+		instantiable. */
+
+		static const GTypeFundamentalInfo fundamental_info =
+		{
+			G_TYPE_FLAG_CLASSED | G_TYPE_FLAG_INSTANTIATABLE
+		};	
+
+		type = g_type_register_fundamental
+		(
+			g_type_fundamental_next (),	/* next available GType number */
+			"SomeObjectType",		/* type name as string */
+			&type_info,			/* type info as above */
+			&fundamental_info,		/* fundamental info as above */
+			0				/* type is not abstract */
+		);
+	}
+
+	return	type;
+}
+
+/* Lets build a simple test driver for out our code! */
+
+int	main()
+{
+	SomeObject	*testobj = NULL;
+
+	/* This gets the type system up and running. */
+	g_type_init ();
+
+	/* Create an instance object from the system. */
+	testobj = SOME_OBJECT (g_type_create_instance (some_object_get_type()));
+
+	/* Call our methods. */
+	if (testobj)
+	{
+		g_print ("%d\n", testobj->m_a);
+		some_object_method1 (testobj, 32);
+
+		g_print ("%s\n", testobj->m_b);
+		some_object_method2 (testobj, "New string.");
+
+		g_print ("%f\n", testobj->m_c);
+		some_object_method3 (testobj, 6.9);
+	}
+
+	return	0;
+}
+
+Final Thoughts
+-----
+
+We have implemented our first object in C, but it was a lot of work, and there is no real object orientation here since we have purposely not said anything about inheritance. In the next section we will see how to make our lives much easier when interacting with other people's code by deriving our class SomeObject from the built-in base class GObject.
+
+<notice>
+While we will reuse the ideas and patterns we have discussed above throughout the text, attempting to create a fundamental type that behaves as it should with other GTK+ code is very difficult and in-depth. It is recommended that you always create new types by deriving from GObject, since it does a lot of background work to make things behave how GTK+ assumes it should. From now on all our objects will derive from GObject, which will be the subject of our next section.
+</notice>
+ 
+2. Creating a single Object derived from GObject
+
+Design
+-----
+
+While we can now make a rudimentary object, we have intentionally ignored the context of our type system: as the basis of a sophisticated suite of libraries; chiefly the GUI library GTK+. The design of GTK+ calls for a root object that all others derive from. This allows a least common denominator functionality that all objects will share: signal support (for passing messages easily from one object to another), lifetime management via reference counting, properties support (for easily setting and getting an object's data fields), and constructor/destructor support (which know how to setup signals,refernces and properties). When we derive our object from GObject, we get all of the above, and generally make things easier when interacting with other GObject based libraries. However, we will not talk about signals, reference counting, properties, or any other specific features in this chapter; instead this chapter will concentrate on how inheritance works in the type system.
+
+As we already know, if LuxuryCar inherits from Car, we know that LuxuryCar *is* a Car, plus some new specific features. How can we get our system to mimic this behaviour? We can use a trick that exploits a feature of C structs: the first member listed in a struct's definition must be the first member found in memory. If we insist that all objects declare their parent as the first member of their own struct, then we can quickly turn a pointer to any object into a pointer to its parent by simply casting the pointer to it's parent! While this trick is very handy, and syntactically very clean, this kind of cast only works with pointers -- you can't cast regular structs this way.
+
+<notice>
+This casting trick is *not* at all type safe. Casting an object to something other than its parent is perfectly valid, but highly unwise. It is up to the programmer to ensure his casts are safe.
+</notice>
+
+Creating Type Instances
+-----
+With this technique in mind, how does the type system instantiate objects? The first time we ask the system to create an instance object through the function g_type_create_instance, it must first create a class object for the instance to use. If the class struct is derived from another, the system needs to create and initialize those parent class objects too. The system can do this because we have specified a structure (the GTypeInfo struct in *_get_type), that describes each object's instance size, class size, initialization functions, and finalize functions.
+
+- to instanciate an object with g_type_create_instace
+	if there is no corresponding class object
+		create it and add it to the class hierarchy
+	create instance object and return a pointer to it
+
+When the system creates a new class object, it first allocates enough space to put the final requested class object in. It then proceeds from parent-most class object to child-most class object in the inheritance tree, overwriting the final class object's fields with its parents' at the memory level. This is how children inherit from their parents. After it has copied one parent's data over, the system runs that parent class's "base_init" function on the class object in its current state. This process of overwriting and executing "base_init"s continues until it has been completed for every parent of the final class. Next the system runs the final class's "base_init" and "class_init" on the final class object. The function "class_init" takes a parameter, which could be considered a class object constructor parameter, called "class_data" above.
+
+The observant reader will wonder why the parent's base_init is needed when we have an exact copy of the parent object already? We need base_init when exact copy won't do, when some data has to be re-created for each class. For example a class member might point to another object, and we want each class to point to its own object (a memory copy is a "shallow copy", and we may want a "deep copy"). Experienced GObject programmers tell me that base_init is rarely used in practice.
+
+When the system creates a new instance object, it first allocates enough space to put the instance object in. It then proceeds from parent-most instance object to child-most instance object and runs that parent class's "instance_init" function on the class object in its current state. Finally the system runs the final class's "instance_init" on the final class object.
+
+I will try to summarize the algorithms I have described in some pseudo-code:
+
+- to instantiate class object
+	allocate memory for final_object
+	for each class object from parent to child
+		copy object over final_object
+		run object's own base_init on final_object
+	run final_object's base_init on final_object
+	run final_object's class_init on final_object with class_data
+
+- to instantiate instance object
+	allocate memory for final_object
+	for each class object from parent to child
+		run object's own instance_init on final_object
+	run final_object's instance_init on final_object
+
+
+Now that there are two initialized class and instance objects, the system sets the instance object's class pointer to the class object, so that the instance object can access its class object containing its vtable. This is how the system instantiates any registered type; however GObject implements its own constructor and destructor semantics on top of what we have described above!
+
+Creating GObject Instances
+-----
+
+Previously we used the function g_type_create_instance to give us a working instance object. However GObject gives us a new API for creating gobjects, built on top of everything we have discussed so far. GObject implements three new methods which are used by this API to create and destroy new GObjects: constructor, dispose, and finalize.
+
+Since C lacks many of the polymorphic features of true OO languages, specifically the ability to admit multiple constructors, GObject's constructor requires some digression:
+
+How can we flexibly pass various kinds of initialization information to our object in a way that makes object construction easy to do? We might consider restricting ourselves to only using copy constructors, filling in a static "init object" with what ever specific fields we want, and passing the "init object" to the copy constructor to finish the job -- simple but not very flexible. 
+
+However the GObject authors have devised a much more general solution that also provides a handy getting-and-setting mechanism called "properties", which encasulates raw access to an object's data fields. With this system our properties are named with a string, and protected with bounds and type checking. Properties can also be specified to be writable at contruction-time only, like const variables in C++.
+
+Properties makes use of a polymorphic type called GValue, which allows the programmer to safely copy a value without knowing the specific type beforehand. GValue works by tracking the GType of the value it holds, and using the type system to make sure it always has a virtual function which can handle copying to another GValue or conversion to another GType. We will discuss GValues and Properties in following sections.
+
+To create a new property for a GObject, we define it's type, name, and default value, then create an object that ecapsulates that information called a "property specification". In the GObject's class_init function we use the function g_object_class_install_property to attach the property specification to the GObject's class object.
+
+<notice>
+Any child object that adds a new property must override the set_property and get_property virtual functions it inherited from GObject. Exactly what these methods do will be covered in a later section.
+</notice>
+
+With properties we can pass our constructor an array on property specifications, and the initial values we want, then simply call set_property on the GObject, and get all the benefits of properties magically. However as we will see later, we never call the constructor directly.
+
+Another feature of GObject's constructor that is not so obvious is that each constructor needs to accept a GType argument and pass that GType to its parent's constructor in case it becomes a parent to another object. This is because GObject's constructor must know the GType of the final child object since it is GObject's constructor that calls g_type_create_instance using the that child's GType.
+
+<notice>
+If we specify our own constructor, then we must override the default constructor given to us from our parent. The constructor must then "chain up" to the parent class by calling the parent's constructor *before* it has done any work. However since we are using properties, in practice we never need to override the default constructor.
+</notice>
+
+I must appologize of the above digressions, but it is a complexity we must come to grips with to understand how the whole things works. With what we have discussed above, we can now understand GObject's constuction function, g_object_new. This function takes a GType corresponding to the GType of the GObject derived object we wish to create, and a series of property names (which you recall are just C strings) and GValue pairs. 
+
+This series is converted into a list of pairs, and the corresponding property specifications, that we installed in the system in our class_init function, are found. The constructor defined in the class object is called with the GType and construction properties as arguments. From child-most constructor to parent-most constructor, the chain is followed until GObject's constructor is run -- in effect it is the first real initialization code to run. GObject's constructor first calls g_type_create_instance using the GType we carried all the way from g_object_new, and the process we descibed in detail previously occurs in order to create an instance. Next it gets the final object's class, and calls the set_property method on all the construction properties passed via the constructor. That is why we always have to override the get_/set_preoprty methods any time we add a new property. As the chained constructors return, the code contained therein gets executed from parent to child. 
+
+As parent constructors return, it becomes the child's turn to execute its own initialization code. In effect the order of execution of code becomes:
+1. from GObject to ChildObject run instance_init
+2. from GObject to ChildObject run constructor
+
+Lastly any remaining properties that weren't passed to the constructor are set using the set_property methods one last time. 
+
+The astute read may wonder then under what circumstances should they override the default constructor and put their own code in their own constructor? Since all our properties are set with the virtual method set_property, there is almost never any need to override GObject's default constructor.
+
+I will attempt to summarize the GObject construction process with the following pseudo-code:
+
+- to create a proper GObject based object given type a list of property+value pairs:
+	lookup the specifications corresponding to pairs and place in list
+	call final_object's constructor on with specification_list and type
+		recursively descend to GObject's constructor
+			call g_type_create_instance with type
+			call virtual set_property with specification_list
+	call virtual set_property with remaining properties
+
+<notice>
+GObject divides properties into two classes, construct and "regular" properties.
+</notice>
+
+Destroying GObject instances
+-----
+
+With that work done, we can look to what happens when we no longer need the object. However the destructor concept from other OO languages is in GObject decomposed into two methods: dispose and finalize.
+
+The dispose method is called when the object first knows it will be destroyed. It is supposed to release any references to resources that may need some advance warning due to reference cycles, or may be scarce and thus contended for by other objects. The dispose method may be called any number of times, and thus the code therein should be safe in that case. Guarding the dispose code with a static variable is a common practise. The object is also expected to be usable without unrecoverable error (such as a SEGFAULT) after dispose has been run, so some members cannot be freed or altered during the dispose process. Recoverable errors, such as returning error codes or NULL values, are fine.
+
+The finalize method finishes releasing the remaining resources just before the object itself will be freed from memory, and therefore it will only be called once. The two step process helps reduce cycles in reference counting schemes. 
+
+<notice>
+If we specify our own dispose and finalize, then we must override the default dispose and finalize given to us from our parent. Both dispose and finalize must "chain up" to the parent class by calling the parent's respective dispose and finalize methods *after* they have destroyed their own members.
+</notice>
+
+Unlike the constructor, we will frequently need to override the dispose and finalize methods whenever our object allocates resources which must be freed.
+
+Knowing which method is the appropriate place to put certain destruction code is in general not an easy problem to solve. However, when dealing with reference counted libraries (such as GTK+), one should unreference all objects in dispose, and free all memory or close file descriptors in finalize.
+
+We discussed g_object_new, but when do we get to destroy our objects? As we have alluded to above, GObjects are reference counted, which is to say that it keeps an integer value counting how many other objects or functions are currently "using" or referencing it. When you want to work with a GObject, and thus want to guarentee that it doesn't destroy itself while you're using it, you must call g_object_ref with the object as a parameter as soon as possible. This simply increments the reference count. Failing to do so may allow the object to be destroyed, and cause your program to crash.
+
+Similarly, when you are finished working with the object, you must call g_object_unref. This will decrement the reference count, and check if it is zero. When the count reaches zero, the object will be disposed then eventually finalized. Failing to unreference a GObject is a memory leak since the count can never reach zero.
+
+Finally, we are now ready to write some code! But don't let the above lengthy and difficult prose intimidate you. If you don't totally understand what is being said yet, don't worry -- GObject is complex! Read on for more details, try out some sample programs, or just get some sleep and read it over tomorrow.
+
+What we write will look very similar to our first example, in fact I will leave some of the more inconsequential or redundant code out. 
+
+Code (header)
+-----
+
+<step>
+We proceed as before, but this time we create our structs with the first member being the parent object. In this case the parent object is GObject.
+</step>
+
+/* Our "Instance struct" defines all the data fields that make our object unique. */
+typedef struct _SomeObject SomeObject;
+struct _SomeObject
+{
+	GObject		parent_obj;
+
+	/* Some useful fields may follow. */
+};
+
+/* Our "Class struct" defines all the method functions that our objects will share. */
+typedef struct _SomeObjectClass SomeObjectClass;
+struct _SomeObjectClass
+{
+	GTypeClass	parent_class;
+
+	/* Some useful methods may follow. */
+};
+
+<step>
+The rest of the header file proceeds familiarly.
+</step>
+
+
+Code (source)
+-----
+
+<notice>
+We need to add declarations for the GObject specific methods we are going to override.
+</notice>
+
+/* These are the GObject Construct/Destroy methods. Their signatures are determined in gobject.h. */
+GObject* some_object_constructor (GType this_type, guint n_properties, GObjectConstructParam *properties)
+{
+	/* If our class is derived from, and the child wants to chain to us, then this_type will
+	   NOT be SOME_OBJECT_TYPE, rather g_type_peek_parent will be SOME_OBJECT_TYPE, and we will 
+	   have an infinite loop. */
+
+	GObjectClass *parent_class = g_type_class_peek (g_type_peek_parent (SOME_OBJECT_TYPE()));
+	 
+	some_object_parent_class-> constructor (self_type, n_properties, properties);
+
+	/* There is rarely need to do work here */
+}
+
+void	some_object_dispose (GObject *self)
+{
+	GObjectClass *parent_class = g_type_class_peek (g_type_peek_parent (SOME_OBJECT_TYPE()));
+	static gboolean first_run = TRUE;
+
+	if (first_run)
+	{
+		first_run = FALSE;
+		
+		/* Call g_object_unref on any GObjects that we hold, but don't break the object */
+
+		parent_class-> dispose (self);
+	}
+}
+
+void	some_object_finalize (GObject *self)
+{
+	GObjectClass *parent_class = g_type_class_peek (g_type_peek_parent (SOME_OBJECT_TYPE()));
+
+	/* Free any memory or close any files */ 
+
+	parent_class-> finalize (self);
+}
+
+<notice>
+GObjectConstructParam is a struct with two members, one is an array of parameter specifications of type GParamSpec, and the other is an array of corresponding values of type GValue.
+</notice>
+
+/* These are the GObject Get and Set Property methods. Their signatures are determined in gobject.h. */
+void	some_object_get_property (GObject *object, guint property_id, GValue *value, GParamSpec *pspec)
+{
+}
+
+void	some_object_set_property (GObject *object, guint property_id, const GValue *value, GParamSpec *pspec)
+{
+}
+
+
+/* Here is where we override any functions. Since we have no properties or even fields, none of the below are needed. */
+void	some_object_class_init		(gpointer g_class, gpointer class_data)
+{
+	GObjectClass	*this_class	= G_OBJECT_CLASS (g_class);
+	
+	this_class-> constructor	= &some_object_constructor;
+	this_class-> dispose		= &some_object_dispose;
+	this_class-> finalize		= &some_object_finalize;
+
+	this_class-> set_property	= &some_object_set_property;
+	this_class-> get_property	= &some_object_get_property;
+}
+
+Final Thoughts
+-----
+
+In order to talk about creating and destroying GObjects, by necessity we had to touch on properties and certain other quirks. However I left property code from the example, deffering that discussion to the next section. Try not to let the complexity of it all overwhelm you. After you've wrestled with the ideas a little more, they will start to make more sense. As for above, we have contrained ourselves to making a basic GObject, which in the next sections we will actually make function. The important part, is that we have learned the tools that we will need to make the rest of the document easier to understand.
+
+
+3. Making use of built-in Macros to auto generate code
+
+Design
+-----
+As you may have noticed, much of what we have done above ranges from the merely mechanical, to down-right boiler-plate. Most of our funtions are not general-purpose, and have to be individually re-written for each type we create. Surely this is why we have computers in the first place -- to automate such tasks and make our lives simpler! 
+
+Well, we are in luck, since C's preprocessor will allow us to write macros that allow us to simply define a new type, which at compile time expands into the proper C code. Using macros also helps reduce human errors which may appear when declaring everything manually.
+
+However with this automation we lose flexibility. There are a huge number of possible variations on the steps we have described above that we may want to make use of, but a macro can only implement one expansion. If the macro provides a light-weight expansion, and we want a complete type, then we have to write a lot of manual code anyways. If the macro provides a complete expansion, and we want a light-weight type then we either end up with code bloat, spending a lot of time filling in stubs we will never use, or just plain incorrect code. There is also the fact that C's preprocessor was simply not designed to do the find of code generation we are interested in, and has limited features we can make use of.
+
+Code
+-----
+The code for creating a new type is pretty simple: 
+G_DEFINE_TYPE_EXTENDED (TypeName, function_prefix, PARENT_TYPE, GTypeFlags, CODE)
+
+The first parameter is the name of the type. The second is the prefix that will be prepended to the names of functions, and thus conform to our naming convention. The third is the GType of the object that we wish to inherit from. The fourth is the GTypeFlag which will be added to the GTypeInfo struct. The fifth parameter is for any code we want to run immediately after the type has been registered.
+
+What would be more enlightening, however, would be to look at what code the above actually expands to.
+
+G_DEFINE_TYPE_EXTENDED (SomeObject, some_object, 0, some_function())
+
+<notice>
+The exact code which the macro will expand to is dependent on the version's implementation. You should always check the expansion before you make assumptions about what a macro genereates.
+</notice>
+
+expands to (after cleaning up the whitespace):
+
+static void some_object_init (SomeObject *self);
+static void some_object_class_init (SomeObjectClass *klass);
+static gpointer some_object_parent_class = ((void *)0);
+
+static void some_object_class_intern_init (gpointer klass) 
+{
+	some_object_parent_class = g_type_class_peek_parent (klass); 
+	some_object_class_init ((SomeObjectClass*) klass);
+} 
+
+GType some_object_get_type (void) 
+{
+	static GType g_define_type_id = 0; 
+	if ((g_define_type_id == 0)) 
+	{ 
+		static const GTypeInfo g_define_type_info = 
+		{ 
+			sizeof (SomeObjectClass), 
+			(GBaseInitFunc) ((void *)0), 
+			(GBaseFinalizeFunc) ((void *)0), 
+			(GClassInitFunc) some_object_class_intern_init, 
+			(GClassFinalizeFunc) ((void *)0), 
+			((void *)0), 
+			sizeof (SomeObject), 
+			0, 
+			(GInstanceInitFunc) some_object_init, 
+		}; 
+
+		g_define_type_id = g_type_register_static 
+		(
+			G_TYPE_OBJECT, 
+			"SomeObject", 
+			&g_define_type_info, 
+			(GTypeFlags) 0
+		);
+		
+		{ some_function(); } 
+	} 
+
+	return g_define_type_id; 
+}
+
+<notice>
+The macro defines a static variable called "<PREFIX>_parent_class", which is a pointer to the parent class of the object we are creating. This is needed when you want to discover the parent of the virtual method, and not the parent of the given GObject derived object, and is used primarily in chaining dispose/finalize, which are almost always virtual. Our code further on will not use this construct, since there are functions that do this without keeping a static variable.
+</notice>
+
+As you should have noticed, there is not code generated for base_init/finalize or class_finalize. If you need these functions, then you should write your code from scratch.
+
+
+4. Properties
+
+We have alluded to what a wonderful thing properties are, and how they go about it, but to get into any more detail we need to digress yet again.
+
+GValues
+-----
+
+C is a strongly type-checked language, meaning the compiler makes you declare the type of variable you want to use, and complains any time you use it in a way inconsistent with that type. This is a good thing since it makes the resulting code fast, and helps us catch type mistakes that could cause crashes or insecure behaviour. This is also a bad thing since we programmers live and think in a world that is hardly as strict, and we wish to have our type behave polymorphically -- that is change their behaviour in different contexts. And as we have seen above in our discussions of inheritance, to get a little polymorphism we can to resort to C casts. However when declaring functions and passing simple values to them, using raw pointers can become troublesome. Lucky, the type system gives us another tool that C doesn't have: the GType. 
+
+Lets frame the problem more clearly. I want a data type that implements a list of various types of values, and I want to be able to write an interface to that list that doesn't depend on the specific type of the value given and doesn't require me specify redundant functions for each value type. Such an interface must have some type, so we'll call it GValue (for Generic Value). How can we implement such a beast?
+
+We create a structure that encapsulates our value, and has two fields: a union of all representable fundamental types (ie: char, int, double, pointer, ...), and the GType of the value stored in that union. In this way we can hide the value's type within GValue, yet still guarentee type safety by checking any GValue operations against the GType. This also downloads the specification of redundant type based operations (such as get_int, set_float, ...) into g_value_* which keeps your API free from such trouble. 
+
+The wary reader will notice that each GValue takes up at least as much memory as the largest fundamental type (usually 8 bytes), plus the size of GType. GValues are not space efficient, have a non-trivial overhead, and therefore should not be used in mass quantities. The most common usage is for specifying generic APIs. 
+
+Exactly how GValue works outside of this is a little beyond the scope of this discussion, but it is helpful to understanding properties.
+
+<example>
+/* Lets copy an integer around using GValue! */
+#define g_value_new(type) g_value_init (g_new (GValue, 1), type)
+
+GValue *a = g_value_new (G_TYPE_UCHAR);
+GValue *b = g_value_new (G_TYPE_INT);
+int c = 0;
+
+g_value_set_uchar (a, 'a');
+g_value_copy (a, b);
+
+c = g_value_get (b);
+g_print ("w00t: %d\n", c);
+
+g_free (a);
+g_free (b);
+</example>
+
+Design
+-----
+
+We have already touched on properties above, so we already have a justification for their existance, but lets continue to motivate the rest of their design for tradition's sake!
+
+To continue building a general property setting mechanism, we need a way to parameterize, and then later find the property name independently of what we might have named the variable in our instance struct. Externally we wish to use C strings to specify the property from the public API, but internally that is far slower than necessary. Therefore we enumerate the properties, and use an index into that enumeration to identify the property within our own code.
+
+We have already mentioned the property specification, called GParamSpec in Glib, which holds our object's GType, our object's property name, our property enumerated ID, default value, boundary values, and more. Thus the GParamSpec is what allows the type system to map string names to enumerated property IDs, and is the glue that holds everything together.
+
+When we wish to set or get a property, we call g_object_set/get_property on our object with the property name, and a GValue that holds the value we wish to set. The g_object_set_property function then looks up the GParamSpec associated with the property name, looks up our object's class, and calls the object's set_property method on the object. This implies that if we introduce any properties, we must override the set/get_property method. Also any properties introduced by the parent class are handled properly by the parent's set/get_property methods, since that is the class where the GParamSpec was installed from. Finally it imples that we must install a GParamSpec from our object's class_init! 
+
+Lets add the code to handle properties to our SomeObject! We will assume we already have a working skeleton as presented in the previous section.
+
+Code (header)
+-----
+
+<step>
+AS above, except we added two properties.
+</step>
+
+/* Our "Instance struct" defines all the data fields that make our object unique. */
+typedef struct _SomeObject SomeObject;
+struct _SomeObject
+{
+	GObject		parent_obj;
+
+	/* Our properties */
+	int		a;
+	float		b;
+
+	/* Some useful fields may follow. */
+};
+
+
+Code (source)
+-----
+
+<step>
+Create an enumeration for internally tracking properties.
+</step>
+
+enum
+{
+	OBJECT_PROPERTY_A = 1 << 1;
+	OBJECT_PROPERTY_B = 1 << 2;
+};
+
+<step>
+Implement the handlers for the properties we introduced.
+</step>
+
+/* These are the GObject Get and Set Property methods. Their signatures are determined in gobject.h. */
+void	some_object_get_property (GObject *object, guint property_id, GValue *value, GParamSpec *pspec)
+{
+	SomeObject *self = SOME_OBJECT (object);
+
+	switch (property_id)
+	{
+		case OBJECT_PROPERTY_A:
+			g_value_set_int (value, self-> a);
+			break;
+
+		case OBJECT_PROPERTY_B:
+			g_value_set_float (value, self-> b);
+			break;
+
+		default: /* No property with that ID!! */
+	}
+}
+
+void	some_object_set_property (GObject *object, guint property_id, const GValue *value, GParamSpec *pspec)
+{
+	SomeObject *self = SOME_OBJECT (object);
+
+	switch (property_id)
+	{
+		case OBJECT_PROPERTY_A:
+			self-> a = g_value_get_int (value);
+			break;
+
+		case OBJECT_PROPERTY_B:
+			self-> b = g_value_get_float (value);
+			break;
+
+		default: /* No property with that ID!! */
+	}
+}
+
+<step>
+Override the set/get_property methods inherited from our parent and install GParamSpecs.
+</step>
+
+/* Here is where we override any functions. */
+void	some_object_class_init		(gpointer g_class, gpointer class_data)
+{
+	GObjectClass	*this_class	= G_OBJECT_CLASS (g_class);
+	GParamSpec	*spec;
+	
+	this_class-> constructor	= &some_object_constructor;
+	this_class-> dispose		= &some_object_dispose;
+	this_class-> finalize		= &some_object_finalize;
+
+	this_class-> set_property	= &some_object_set_property;
+	this_class-> get_property	= &some_object_get_property;
+
+	spec = g_param_spec_int
+	(
+		"property-a",				/* property name */
+ 		"a",					/* nickname */
+		"Mysterty value 1",			/* description */
+		5,					/* minimum */
+		10,					/* maximum */
+		5,					/* default */
+		G_PARAM_READABLE |G_PARAM_WRITABLE	/* GParamSpecFlags */
+	);
+	g_object_class_install_property (this_class, OBJECT_PROPERTY_A, spec);
+
+	spec = g_param_spec_float
+	(
+		"property-b",				/* property name */
+ 		"b",					/* nickname */
+		"Mysterty value 2			/* description */
+		0.0,					/* minimum */
+		1.0,					/* maximum */
+		0.5,					/* default */
+		G_PARAM_READABLE |G_PARAM_WRITABLE	/* GParamSpecFlags */
+	);
+	g_object_class_install_property (this_class, OBJECT_PROPERTY_B, spec);
+}
+
+5. Signals
+-----
+
+</article>

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<article>
+	<articleinfo><title>An Unconventional GObject Tutorial and How-To</title></articleinfo>
+	<section>
+		<title>Purpose</title>
+		<para>This document is used for two purposes: one is as a tutorial on learning
+	Glib's GObject Type System, and the other is a step-by-step how-to for using
+	the system. The tutorial proceeds from the point of view of designing an
+	Object-Oriented type system in C, where GObject is the presumed solution. It
+	is thought that this manner of presenting the material will better justify
+	the form that the library currently takes, and help explain the steps
+	required use it. The how-to is presented after the tutorial in a
+	step-by-step, matter-of-fact, form with no explanations, so that it will be
+	useful to the merely pragmatic programmer.Text of the article goes here</para>
+	</section>
+	<section>
+		<title>Audience</title>
+		<para>The tutorial is meant for those who are familiar with OO concepts, but are 				just beginning to learn GObject or GTK+. I will assume previous knowledge 				of an OO'ed language, and a basic command of C.</para>
+	</section>
+
+	<section>
+		<title>Motivation</title>
+		<para>While writing an OO system in a language that doesn't support it may sound
+	like a foolish exercise in masochism to some, there are indeed some good
+	reasons why one would want to do such a thing. While I will not try to
+	justify the authors' decision, and will assume that the reader has some good
+	reason for using Glib, I will point out some important features of the
+	system:</para>
+
+		<itemizedlist>
+			<listitem>
+				<para>C is the most portable programming language</para>
+			</listitem>
+		</itemizedlist>
+	</section>
+</article>

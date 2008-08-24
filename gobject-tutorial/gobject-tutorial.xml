@@ -1,0 +1,529 @@
+
+<?xml version="1.0"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
+
+<article id="gobject-tutorial" lang="en">
+<articleinfo>
+    <title>A GObject Tutorial and How-To</title>
+    
+    <copyright>
+      <year>2004</year>
+      <holder>Ryan McDougall</holder>
+    </copyright>
+
+    <author>
+      <surname>McDougall</surname>
+      <firstname>Ryan</firstname>
+    </author>
+  </articleinfo>
+
+  <sect1 id="sn-intro">
+	<title></title>
+	<para></para>
+
+	<sect2>
+	<title>Purpose</title>
+      	<para>
+	This document is used for two purposes: one is as a tutorial on learning
+	Glib's GObject Type System, and the other is a step-by-step how-to for using
+	the system. The tutorial proceeds from the point of view of designing an
+	Object-Oriented type system in C, where GObject is the presumed solution. It
+	is thought that this manner of presenting the material will better justify
+	the form that the library currently takes, and help explain the steps
+	required use it. The how-to portion is presented after the tutorial in a
+	step-by-step, matter-of-fact form with no explanations, so that it will be
+	useful to the merely pragmatic programmer.
+      	</para>
+	</sect2>
+
+	<sect2>
+    	<title>Audience</title>
+      	<para>
+	The tutorial is meant for those who are familiar with OO concepts, but are just
+	beginning to learn GObject or GTK+. I will assume previous knowledge of an
+	OO'ed language, and a basic command of C.
+      	</para>
+  	</sect2>
+
+  	<sect2>
+  	<title>Motivation</title>
+      	<para>
+	While writing an OO system in a language that doesn't support it may sound
+	like a foolish exercise in masochism to some, there are indeed some good
+	reasons why one would want to do such a thing. While I will not try to
+	justify the authors' decision, and will assume that the reader has some good
+	reason for using Glib, I will point out some important features of the
+	system:
+	</para>
+
+	<itemizedlist>
+	  <listitem><para>
+		C is the most portable programming language
+	</para></listitem>
+	<listitem><para>
+		Glib's type system is fully dynamic, so types can be added at run-time
+	</para></listitem>
+	<listitem><para>
+	    	Glib's type system is specified programatically, so it is more extensible than the 			built-in ones found in standard languages, so new features can be added quickly
+	</para></listitem>
+	</itemizedlist>
+
+      	<para>
+	In OO languages, object oriented features and abilities are a matter of
+	syntax. However since C doesn't support OO natively, the GObject system
+	has to graft on object orientation manually. Often this requires some
+	tedious, or occasionally mystifying things in order to accomplish this
+	goal. It is my intention to enumerate all the necessary steps and
+	incantations necessary to make this process work; and hopefully even
+	elaborate on what it means to your program.
+      	</para>
+    	</sect2>
+  </sect1>
+
+  <sect1 id="sn-basic-object">
+    <title>Creating a single Object with no Inheritance</title>
+	<para></para>
+
+    <sect2>
+      <title>Design</title>
+      <para>
+	In OO, an object consists of two types of members bound under one object reference: data fields and method functions. One way to accomplish this in C is with C structs, where data fields are regular public members and methods are implemented as function pointers. This implementation however	has several serious flaws: awkward syntax, type-safety, and lack of encapsulation to name a few. However there is more practical problem -- it is a serious waste of space. Every instance object would need a 4-byte pointer for each of its methods; all of which would be identical class-wide, and thus ultimately redundant. That is to say if we have a class with only four methods, and a program with 1000 instantiation objects of that class, we are wasting almost 16KB. Clearly we'd be better off memory-wise if we only kept one copy of those pointers in a table that could be accessed by any object in its class.
+      </para>
+
+      <para>
+	Such as table is called a virtual method table (also known as a <firstterm>vtable</firstterm>), and one copy is kept in memory by the GObject system for each class. When you want to call a virtual method, you must ask the system to find the object's vtable; which in Glib is just a struct with function pointers. With this you can now dereference the pointer and thus call the method.
+      </para>
+
+      <important>
+	<para>
+	For clarity's sake, we will call the two types we have diagrammed above <firstterm>instance struct</firstterm> for the struct that hold's our object's fields, and <firstterm>class struct</firstterm> for the struct that holds our vtable. Instantiations of those structs will be called <firstterm>instance objects</firstterm> and <firstterm>class objects</firstterm> respectively. The combination of the two structs as a conceptual unit will be called a <firstterm>class</firstterm> and an instantiation of that class will be called an <firstterm>object</firstterm>. These are not formal definitions, its just a way to keep out story straight as we proceed.
+	</para>
+      </important>
+
+      <para>
+	The reason why functions given by this process are called <firstterm>virtual</firstterm> is because when a function is called, the system dynamically looks up the appropriate function pointer at run-time (not at compile time) and thus allows inherited classes to override a class method by simply assigning a new function pointer to the corresponding entry in the vtable. This allows derived objects to behave correctly even when cast to a base class, and corresponds to what we know of virtual methods in C++. 
+      </para>
+
+      <important>
+	<para>
+	Although vtables save space and allows virtual methods, it also means we can no longer use the dot operator invoke an object's methods. Therefore we should develop the convention that class methods will be called on objects as follows:
+	
+	NAMESPACE_TYPE_METHOD (OBJECT*, PARAMETERS)
+	</para>
+      </important>
+
+      <para>
+	Therefore non-virtual methods will be implemented inside a regular C function, and virtual functions will be implemented by calling the appropriate method from the vtable inside a regular C function. Private methods will be implemented within the source file, but not be exported via the header file. 
+      </para>
+
+      <note>
+	<title></title>
+	<para>
+	While OO normally uses information hiding as part of encapsulation, there is no easy way to hide private members in C. One method is to put your private members into a separate "Private" struct that is defined in the source file only, then place a pointer to the private class in your public object struct. However, in a open-source world this is small protection against a user determined to do the wrong thing. Most developers simply label with a comment those members they wish to protect as private, and hope the user respects the distinction. Both methods of encapsulation can be found in GTK+ and GNOME.
+	</para>
+      </note>
+
+      <para>
+	At this point we have two distinct structs, and no obvious way to find
+	to get the proper vtable given an instantiated object. As we implied
+	above, it is the system's responsibility to do so, and it is able to
+	handle this only by requiring us to register the types we create. The
+	system also requires us to register both (instance and class) structs'
+	initialization and finalization functions (and some other important
+	information), which will allow the system to properly instantiate our
+	objects. The system keeps track of our objects by enumerating all types
+	registered with it, and requiring that all instance objects start with a
+	pointer to its own class vtable, and each vtable start with the number
+	that corresponds to its enumerated type.
+      </para>
+
+      <note>
+	<title></title>
+	<para>
+	The type system requires that all types' instance and class structs
+	start with with a special struct. In the case of instance structs, this
+	struct is basically just a pointer to the type's class object. Since C
+	guarantees that the first member declared in a struct is also the first
+	found in memory, one can get the class object quickly by simply casting
+	the instance object. Since the type system also requires that we declare
+	the parent struct as the first member when we use inheritance, this same
+	feature means that we need only declare this special struct once in the
+	parent class, and we can always find the vtable of any instance object
+	via a cast.
+	</para>
+      </note>
+
+      <para>
+	Lastly we need some functions to define how our objects' lifetimes are
+	managed: a function to call when we wish to create a class object, a
+	function to call when we wish to create an instance object, and a
+	function to call when we are finished with a class object. We do not
+	include a function for finalizing instance objects because instance
+	memory management is generally a complicated problem, and we wish to
+	leave this up to higher levels of code to handle.
+      </para>
+    </sect2>
+
+    <sect2>
+      <title>Code</title>
+
+      <procedure>
+	<title>Writing the Header</title>
+	<step>
+	  <para>
+	    Create "C-style" objects using the struct keyword to implemet our
+	    instance and class objects.
+	  </para>
+
+	  <note>
+		<title></title>
+		<para>
+	    We prepend an underscore to the name of our struct, then add a forward
+	    typedef which gives our struct a proper name. This is due to the
+	    grammar of C, which won't let you declare SomeObject pointers inside
+	    SomeObject (which is handy for such things as linked lists). We have
+	    also created an artificial namespace called "Some", as described by
+	    our convention above.
+		</para>
+	  </note>
+
+	  <programlisting>
+<![CDATA[
+/* Our "Instance struct" defines all the data fields that make our object unique. */
+typedef struct _SomeObject SomeObject;
+struct _SomeObject
+{
+	GTypeInstance	gtype;
+
+	gint 		m_a;
+	gchar*		m_b;
+	gfloat		m_c;
+};
+
+/* Our "Class struct" defines all the method functions that our objects will share. */
+typedef struct _SomeObjectClass SomeObjectClass;
+struct _SomeObjectClass
+{
+	GTypeClass	gtypeclass;
+
+	void		(*method1)	(SomeObject *self, gint);
+	void		(*method2)	(SomeObject *self, gchar*);
+};
+]]>
+	  </programlisting>
+	</step>
+	<step>
+	  <para>
+	    Declare the function that will both register our type in the system
+	    upon first use, then thereafter will return the unique number that
+	    the system uses to track the types we declare. We will call this
+	    function get_type and have it return a GType, which is the integral
+	    type the system declares to identify registered types. Since this
+	    function is specific to our type SomeObject by design and
+	    definition, we prepend "some_object_".
+	  </para>
+
+	  <programlisting>
+<![CDATA[
+/* This method returns the GType associated with our new object type. */
+GType	some_object_get_type (void);
+]]>
+	  </programlisting>
+	</step>
+
+	<step>
+	  <para>
+	    Declare the functions which manage our objects' lifetimes; that is
+	    they set up an object on instantiation, and tear it down on
+	    finalization.
+	  </para>
+	  
+	  <programlisting>
+<![CDATA[
+/* These are the Class/Instance Initialize/Finalize functions. Their signature is determined in gtype.h. */
+void	some_object_class_init		(gpointer g_class, gpointer class_data);
+void	some_object_class_final		(gpointer g_class, gpointer class_data);
+void	some_object_instance_init	(GTypeInstance *instance, gpointer g_class);
+]]>
+	  </programlisting>
+	</step>
+
+	<step>
+	  <para>
+	    Declare our class methods using the C function convention we defined
+	    above.
+	  </para>
+	
+	  <programlisting>
+<![CDATA[
+/* All these functions are methods of SomeObject. */
+void	some_object_method1 (SomeObject *self, gint);	/* virtual */
+void	some_object_method2 (SomeObject *self, gchar*);	/* virtual */
+void	some_object_method3 (SomeObject *self, gfloat);	/* non-virtual */
+]]>
+	  </programlisting>
+	</step>
+
+	<step>
+	  <para>
+	    Create some boiler-plate code which will make our code comply to
+	    existing standards and generally make our lives easier.
+	  </para>
+
+	  <programlisting>
+<![CDATA[
+/* Handy macros */
+#define SOME_OBJECT_TYPE		(some_object_get_type ())
+#define SOME_OBJECT(obj)		(G_TYPE_CHECK_INSTANCE_CAST ((obj), SOME_OBJECT_TYPE, SomeObject))
+#define SOME_OBJECT_CLASS(c)		(G_TYPE_CHECK_CLASS_CAST ((c), SOME_OBJECT_TYPE, SomeObjectClass))
+#define SOME_IS_OBJECT(obj)		(G_TYPE_CHECK_TYPE ((obj), SOME_OBJECT_TYPE))
+#define SOME_IS_OBJECT_CLASS(c)		(G_TYPE_CHECK_CLASS_TYPE ((c), SOME_OBJECT_TYPE))
+#define SOME_OBJECT_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj), SOME_OBJECT_TYPE, SomeObjectClass))
+]]>
+	  </programlisting>
+	</step>
+      </procedure>
+
+      <procedure>
+	<title>Writing the Source</title>
+	
+	<para>
+	  Now we can move on to implementing in the source file what we've just
+	  declared. 
+	</para>
+
+	<note>
+	  <para>
+	    Since our virtual methods are just function pointers, we have to
+	    create some normal C functions that actually reside in addressable
+	    memory (declared as ending in "_impl" and *not* exported in the
+	    header), which actually implement the code we want to point to.
+	  </para>
+	</note>
+
+	<note>
+	  <para>
+	    All functions preceded by "some_object_" are specific to SomeObject
+	    by definition; usually because we explicitly cast various pointers
+	    to SomeObject, or make use of some other class specific
+	    feature.
+	  </para>
+	</note>
+
+	<step>
+	  <para>
+	    Implement the code corresponding to our virtual methods.
+	  </para>
+
+	  <programlisting>
+<![CDATA[
+/* Implementation of virtual functions. */
+void	some_object_method1_impl (SomeObject *self, gint a)
+{
+	self->m_a = a;
+	g_print ("Method1: %i\n", self->m_a);
+}
+
+void	some_object_method2_impl (SomeObject *self, gchar* b)
+{
+	self->m_b = b;
+	g_print ("Method2: %s\n", self->m_b);
+}
+]]>
+	  </programlisting>
+	</step>
+
+	<step>
+	  <para>
+	    Implement the code for all public methods. In the case of virtual
+	    methods, we must use the macro "GET_CLASS" to ask the type system to
+	    return the class object so we can access the vtable where our virtual
+	    methods reside. If the method is non-virtual, we just write the code.
+	  </para>
+
+	  <programlisting>
+<![CDATA[
+/* Public methods. */
+void	some_object_method1 (SomeObject *self, gint a)
+{
+	SOME_OBJECT_GET_CLASS (self)->method1 (self, a);
+}
+
+void	some_object_method2 (SomeObject *self, gchar* b)
+{
+	SOME_OBJECT_GET_CLASS (self)->method2 (self, b);
+}
+
+void	some_object_method3 (SomeObject *self, gfloat c)
+{
+	self->m_c = c;
+	g_print ("Method3: %f\n", self->m_c);
+}
+]]>
+	  </programlisting>
+	</step>
+
+	<step>
+	  <para>
+	    Implement the code for initialization/finalization. We are given
+	    generic pointers by the system (that we trust points to a proper
+	    object), so we must cast them to the appropriate type before we can
+	    do anything.
+	  </para>
+
+	  <programlisting>
+<![CDATA[
+/* This is called when the class object is created. */
+void	some_object_class_init		(gpointer g_class, gpointer class_data)
+{
+	SomeObjectClass	*this_class	= SOME_OBJECT_CLASS (g_class);
+	
+	/* fill in the class struct members (in this case just a vtable) */
+	this_class->method1 = some_object_method1_impl;
+	this_class->method2 = some_object_method2_impl;
+}
+
+/* This is called when the class object is no longer used. */
+void	some_object_class_final		(gpointer g_class, gpointer class_data)
+{
+	/* No class finalization needed since the class object holds no 
+	pointers or references to any dynamic resources which would need 
+	to be released when the class object is no longer in use. */
+}
+
+/* This is called when a instance object is created. The instance's class is passed as g_class. */
+void	some_object_instance_init	(GTypeInstance *instance, gpointer g_class)
+{
+	SomeObject *this_object = SOME_OBJECT (instance);
+
+	/* fill in the instance struct members */
+	this_object->m_a = 42;
+	this_object->m_b = 3.14;
+	this_object->m_c = NULL;
+}
+]]>
+	  </programlisting>
+	</step>
+
+	<step>
+	  <para>
+	    Implement a function for informing the caller of SomeObject's
+	    GType. The first time this function is run, it determines the GType
+	    by fully registering SomeObject with the system. Thereafter the
+	    GType is stored in a static variable, and returns without any
+	    processing. While its possible to register the type in a separate
+	    function, this implementation ensures that the type is always
+	    registered before its used, which is usually when the first object
+	    is instantiated.
+	  </para>
+
+	  <programlisting>
+<![CDATA[
+/* Since there is no base class to derive from, base_init/finalize are NULL */
+GType	some_object_get_type (void)
+{
+	static GType type = 0;
+
+	if (type == 0) 
+	{
+		/* This is the structure that the system uses to fully describe
+		how a type should be created, initialized and finalized. */
+
+		static const GTypeInfo type_info = 
+		{
+			sizeof (SomeObjectClass),
+			NULL,				/* base_init */
+			NULL,				/* base_finalize */
+			some_object_class_init,		/* class_init */
+			some_object_class_final,	/* class_finalize */
+			NULL,				/* class_data */
+			sizeof (SomeObject),
+			0,				/* n_preallocs */
+			some_object_instance_init	/* instance_init */
+    		};
+
+		/* Since our type has no parent, it is considered 
+		"fundamental", and we have to inform the system that our
+		type is both classed (unlike say a float, int, or pointer),
+		and is instantiable (the system can create instance objects.
+		for example, Interfaces or Abstract classes are not 
+		instantiable. */
+
+		static const GTypeFundamentalInfo fundamental_info =
+		{
+			G_TYPE_FLAG_CLASSED | G_TYPE_FLAG_INSTANTIATABLE
+		};	
+
+		type = g_type_register_fundamental
+		(
+			g_type_fundamental_next (),	/* next available GType number */
+			"SomeObjectType",		/* type name as string */
+			&type_info,			/* type info as above */
+			&fundamental_info,		/* fundamental info as above */
+			0				/* type is not abstract */
+		);
+	}
+
+	return	type;
+}
+
+/* Lets build a simple test driver for out our code! */
+
+int	main()
+{
+	SomeObject	*testobj = NULL;
+
+	/* This gets the type system up and running. */
+	g_type_init ();
+
+	/* Create an instance object from the system. */
+	testobj = SOME_OBJECT (g_type_create_instance (some_object_get_type()));
+
+	/* Call our methods. */
+	if (testobj)
+	{
+		g_print ("%d\n", testobj->m_a);
+		some_object_method1 (testobj, 32);
+
+		g_print ("%s\n", testobj->m_b);
+		some_object_method2 (testobj, "New string.");
+
+		g_print ("%f\n", testobj->m_c);
+		some_object_method3 (testobj, 6.9);
+	}
+
+	return	0;
+}
+]]>
+	    </programlisting>
+	</step>
+      </procedure>
+    </sect2>
+
+      <sect2>
+	<title>Final Thoughts</title>
+
+	<para>
+	  We have implemented our first object in C, but it was a lot of work,
+	  and there is no real object orientation here since we have purposely
+	  not said anything about inheritance. In the next section we will see
+	  how to make our lives much easier when interacting with other people's
+	  code by deriving our class SomeObject from the built-in base class
+	  GObject.
+	</para>
+
+	<note>
+	  <para>
+	    While we will reuse the ideas and patterns we have discussed above
+	    throughout the text, attempting to create a fundamental type that
+	    behaves as it should with other GTK+ code is very difficult and
+	    in-depth. It is recommended that you always create new types by
+	    deriving from GObject, since it does a lot of background work to
+	    make things behave how GTK+ assumes it should. From now on all our
+	    objects will derive from GObject, which will be the subject of our
+	    next section.
+	  </para>
+	</note>
+    </sect2>
+  </sect1>
+</article>

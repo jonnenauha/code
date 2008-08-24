@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<abiword version="0.7.9">
+<!-- =====================================================================  -->
+<!-- This file is an AbiWord document.                                      -->
+<!-- AbiWord is a free, Open Source word processor.                         -->
+<!-- You may obtain more information about AbiWord at www.abisource.com     -->
+<!-- You should not edit this file by hand.                                 -->
+<!-- =====================================================================  -->
+
+<!--         Build_ID          = (none) -->
+<!--         Build_Version     = 0.7.9 -->
+<!--         Build_Options     = LicensedTrademarks:On Debug:Off Gnome:Off -->
+<!--         Build_Target      = /space/builds/0956876928/tmp/abi-0.7.9/src/SunOS_5.5.1_sparc32_OBJ/obj -->
+<!--         Build_CompileTime = 18:24:13 -->
+<!--         Build_CompileDate = Apr 27 2000 -->
+
+<section>
+<p style="Heading 2">CPSC 559 Assignment 3 Design Document</p>
+<p style="Normal" props="text-align:right">Ryan McDougall</p>
+<p style="Normal" props="text-align:right">March 19, 2002</p>
+<p style="Heading 3">Section 1 Overview</p>
+<p style="Plain Text"></p>
+<p style="Plain Text">	The EcoServer system is highly modular and object oriented. Each server knows its own EcoLocation and keeps a list of the other server locations, as well it keeps a list of EcoRemoteChannels ( of type EcoChannel ) which transparently manage the queuing and transmission of server generated EcoEvents via RMI. EcoRemoteChannel maintains two Queues, one for EcoEvents produced, and one for EcoEvents consumed.</p>
+<p style="Plain Text"></p>
+<p style="Plain Text">	The EcoChannelDispatcher is a thread that sleeps in the background, randomly waking and dispatching EcoEvents to the respective destinations via EcoChannelTransport. Once EcoChannelDispatcher de-queues the EcoEvent from the producer Queue, it creates an EcoChannelTransport, which invokes the EcoRemoteReceiver interface, implemented by EcoChannelReceiver.</p>
+<p style="Plain Text"></p>
+<p style="Plain Text">	The EcoChannelReceiver publishes its interface via RMI for EcoChannelTransports to invoke. It receives an EcoEvent from the transport and en-queues the EcoEvent in the EcoRemoteChannel's consumer Queue.</p>
+<p style="Plain Text"></p>
+<p style="Heading 3">Section 2 Communication Method</p>
+<p style="Plain Text"></p>
+<p style="Plain Text">	RMI was chosen as the main method of distributed communication due the the high level of transparency afforded to the entire system. The use of Java Sockets would be a lower level than required, and necessitate the creation of some high level protocol to facilitate meaningful communication.</p>
+<p style="Plain Text"></p>
+<p style="Heading 3">Section 3 Replication Issues</p>
+<p style="Plain Text"></p>
+<p style="Plain Text">	Since the EcoRemoteChannel makes no assurances about network latency, it is possible for certain replications to become bogged down in the network or the random delay of the dispatcher, and therefore may become out of order. That is one replica may log event B before event A, while another may say A before B.</p>
+<p style="Plain Text">	However, this is the price for the performance allowed network replication. Solving the Out-of-Order problem requires either Mutual Exclusion, or Time Stamps. The latter being preferred since mutual exclusion eliminates all performance benefits of replication.</p>
+<p style="Plain Text"></p>
+<p style="Heading 3">Section 4 Replication Revisited</p>
+<p style="Plain Text"></p>
+<p style="Plain Text">	When the system was modified to include a method for mutually exclusive communication, not only was performance degraded, as mentioned above, but the result was still insufficient. While all replicas agreed on ordering of their logs, we still lack causal information. That is if A comes before B, and before C, did A <c props="font-style:italic">cause</c> B, C, both, or neither?</p>
+<p style="Plain Text">	There is not enough information to conclude.</p>
+</section>
+</abiword>
