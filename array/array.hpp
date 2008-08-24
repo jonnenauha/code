@@ -17,6 +17,8 @@ namespace ThreeDInc
 	{
 	    //-------------------------------------------------------------------------
 	    public:
+                typedef basic_array <T,Size-1,MemoryAllocator> subarray_t;
+
 		// Constructors
 		basic_array ()
 		    : array_ (NULL), size_ (0)
