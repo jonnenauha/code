@@ -88,21 +88,26 @@ class App(object):
         glutMainLoop()
 
     def reshape(self, w, h):
-        glViewport(0, 0, w, h)
         
-        glMatrixMode(GL_PROJECTION)
-        gluPerspective(self.camera.fov, w/h, self.camera.near, self.camera.far)
+        glViewport(0, 0, w, h)
+
+        if h == 0: h = 1
+        aspect = float(w)/float(h)
+
+        glMatrixMode(GL_PROJECTION); glLoadIdentity()
+        gluPerspective(self.camera.fov, aspect, self.camera.near, self.camera.far)
 
         (ex,ey,ez) = self.camera.eye
         (cx,cy,cz) = self.camera.center
         (ux,uy,uz) = self.camera.up
-        glMatrixMode(GL_MODELVIEW)
+        
+        glMatrixMode(GL_MODELVIEW); glLoadIdentity()
         gluLookAt(ex,ey,ez, cx,cy,cz, ux,uy,uz)
 
     def display(self):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glPushMatrix()
 
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMaterialfv(GL_FRONT, GL_DIFFUSE, [1.0, 0.0, 0.0, 1.0])
         glutSolidSphere(2,20,20)
 
