@@ -14,6 +14,7 @@ function fgrep_impl_() {
     grep_impl_ "${1}" $(find . -name "${2}")
 }
 
+alias ll='ls -l --color'
 alias pd='pushd'
 alias p='popd'
 alias v='gvim'

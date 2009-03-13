@@ -2,7 +2,7 @@
 set nocompatible
 
 "list of file encodings to try
-set fileencodings=iso-2022-jp,ucs-bom,utf8,sjis,euc-jp,latin1
+"set fileencodings=iso-2022-jp,ucs-bom,utf8,sjis,euc-jp,latin1
 
 "change CWD to the dir of the file in the buffer
 ":autocmd BufEnter * cd %:p:h
@@ -78,8 +78,4 @@ nnoremap <C-S> :,$s/\<<C-R><C-W>\>/
 
 "no annoying bell
 set t_vb=
-
-"don't show tab gui due to geometry error
-set showtabline=0
-
 
