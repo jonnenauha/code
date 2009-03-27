@@ -3,20 +3,20 @@
  *			Ryan McDougall -- 2009
  */
 
+#include <cstdlib>
+
 #include <sys/times.h>
 #include <unistd.h>
+#include <signal.h>
+
 #include <iostream>
-#include <sstream>
 #include <map>
 #include <vector>
-#include <list>
 #include <algorithm>
+
 #include <boost/thread.hpp>
 #include <boost/utility.hpp>
 #include <boost/ref.hpp>
-#include <log4cxx/logger.h>
-#include <log4cxx/basicconfigurator.h>
-
 
 using namespace std;
 
@@ -49,7 +49,8 @@ const int FIELD_X = 0;
 const int FIELD_Y = 1;
 const int FIELD_Z = 2;
 
-bool inconsistent;
+bool inconsistent (false);
+int transactions (0), aborts (0), inconsistencies (0), runs (0);
 
 inline void set_bits (bit_string_t &b, bit_string_t c) { b |= c; }
 inline void clear_bits (bit_string_t &b, bit_string_t c) { b &= ~c; }
@@ -72,16 +73,15 @@ struct event
     event (const event &e)
         : timestamp (e.timestamp), id (e.id), value (e.value), msg (e.msg) {}
 
-    string get () 
-    { 
-        stringstream ss; 
-        ss << "(" << timestamp << ") [" << id << "] " << msg;
-        if (value >= 0) ss << " : " << value; 
-        return ss.str(); 
-    }
-
     bool operator< (const event &rhs) const { return (timestamp < rhs.timestamp); }
 };
+    
+ostream &operator<< (ostream &out, const event &e)
+{
+    out << "(" << e.timestamp << ") [" << e.id << "] " << e.msg; 
+    if (e.value >= 0) out << " : " << e.value; 
+    return out;
+}
 
 struct eventlog
 {
@@ -464,13 +464,34 @@ struct test
     }
 };
 
+void print ()
+{
+    cout << "runs: " << runs << endl;
+    cout << "transactions: " << transactions << endl;
+    cout << "aborts: " << aborts << endl;
+    cout << "inconsistencies: " << inconsistencies << endl;
+}
+
+void siginthandle (int) 
+{ 
+    print (); 
+    exit (0);
+}
+
 //=============================================================================
 // Main entry point
 int main (int argc, char** argv)
 {   
-    //BasicConfigurator::configure();
+	signal (SIGINT, siginthandle);
+
     component c;
-    int transactions (0), aborts (0), inconsistencies (0), runs (0);
+
+    cout << "sizeof (field_t) : " << sizeof (field_t) << endl;
+    cout << "sizeof (mutex_t) : " << sizeof (mutex_t) << endl;
+    cout << "sizeof (field_log_t) : " << sizeof (field_log_t) << endl;
+    cout << "sizeof (component) : " << sizeof (component) << endl;
+    cout << "sizeof (component_transaction) : " << sizeof (component_transaction) << endl;
+    cout << "sizeof (component_transaction_view) : " << sizeof (component_transaction_view) << endl;
 
     while (inconsistencies < 1)
     {
@@ -505,7 +526,7 @@ int main (int argc, char** argv)
 
             vector <event>::iterator i (log.begin());
             for (; i != log.end(); ++i)
-                cout << i->get() << endl;
+                cout << *i << endl;
 
             ++ inconsistencies;
         }
@@ -519,10 +540,7 @@ int main (int argc, char** argv)
         ++ runs;
     }
 
-    cout << "runs: " << runs << endl;
-    cout << "transactions: " << transactions << endl;
-    cout << "aborts: " << aborts << endl;
-    cout << "inconsistencies: " << inconsistencies << endl;
+    print ();
 
     return 0;
 }
