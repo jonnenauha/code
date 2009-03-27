@@ -43,7 +43,7 @@ typedef map <field_name_t,field_t>  field_log_t;
 
 typedef vector <component_transaction *> component_transaction_list_t;
 
-const int NUM_THREADS = 2;
+const int NUM_THREADS = 3;
 const int NUM_FIELDS = 3;
 const int FIELD_X = 0;
 const int FIELD_Y = 1;
@@ -202,10 +202,13 @@ struct component_transaction : boost::noncopyable
     bit_string_t    read_delta;
     bit_string_t    change_delta;
     field_log_t     log;
-
+    
+    bool write_inconsistency;
+        
     component_transaction (component *c, eventlog &log) 
         : comp (c), view (c), el (log), 
-        write_delta (0), read_delta (0), change_delta (0)
+        write_delta (0), read_delta (0), change_delta (0),
+        write_inconsistency (false)
     {
         el.post ("locked for active add");
         lock l (comp-> active_lock);
@@ -287,19 +290,17 @@ struct component_transaction : boost::noncopyable
                 el.post (comp->fields [FIELD_Y], "Y");
                 el.post (comp->fields [FIELD_Z], "Z");
 
-                inconsistent = true;
-                throw component_transaction_inconsistent_exception ();
+                write_inconsistency = true;
             }
             
+            log_write (f);
+            view.write (f, v);
+
             comp-> dirty_field (f);
 
             el.post (comp-> dirty, "new dirty");
+            el.post ("unlocked from set");
         }
-
-        el.post ("unlocked from set");
-
-        log_write (f);
-        view.write (f, v);
     }
 
     void rollback ()
@@ -319,6 +320,8 @@ struct component_transaction : boost::noncopyable
             }
 
             notify_change ();
+        
+            comp-> clean_fields (write_delta);
             el.post ("unlocked from rollback");
         }
     }
@@ -328,12 +331,11 @@ struct component_transaction : boost::noncopyable
         el.post ("commit");
 
         {
-            lock l1 (comp->dirty_lock); el.post ("locked for dirty clean");
-            lock l2 (comp->active_lock); el.post ("locked for change notify");
+            lock l (comp->dirty_lock); el.post ("locked for dirty clean");
 
             check();
 
-            if (!view.consistent())
+            if (!view.consistent() || write_inconsistency)
             {
                 el.post ("INCONSISTENCY DETECTED AFTER COMMIT CHECK");
                 el.post (view.touched, "view touched");
@@ -350,6 +352,8 @@ struct component_transaction : boost::noncopyable
             }
             
             notify_change ();
+        
+            comp-> clean_fields (write_delta);
             el.post ("unlocked from commit");
         }
 
@@ -358,12 +362,14 @@ struct component_transaction : boost::noncopyable
 
     void notify_change ()
     {
-        comp-> clean_fields (write_delta);
+        lock l (comp->active_lock); el.post ("locked for change notify");
 
         el.post ("send change_deltas");
         component_transaction_list_t::iterator i (comp-> active.begin());
         for (; i != comp-> active.end(); ++i)
             (*i)-> change_delta |= write_delta; 
+            
+        el.post ("unlocked from change notify");
     }
 };
 
