@@ -1,6 +1,6 @@
 /* class.hpp -- class definition
  *
- *			Ryan McDougall -- 20070101
+ *			Ryan McDougall -- 2009
  */
 
 #ifndef _CLASS_HPP_

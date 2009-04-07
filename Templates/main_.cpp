@@ -1,6 +1,6 @@
 /* main.cpp -- main module
  *
- *			Ryan McDougall -- 20070101
+ *			Ryan McDougall -- 2009
  */
 
 #include <iostream>

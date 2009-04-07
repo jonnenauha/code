@@ -1,6 +1,6 @@
 /* main.h -- exported function header
  *
- *			Ryan McDougall -- 20070101
+ *			Ryan McDougall -- 2009
  */
 
 #ifndef _MAIN_H_
