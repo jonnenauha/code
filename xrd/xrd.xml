@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XRD>
+    <Subject>http://blog.example.com/article/id/314</Subject>
+    <Alias>http://blog.example.com/cool_new_thing</Alias>
+
+    <Expires>2010-01-30T09:30:00Z</Expires>
+
+    <Type>http://blgx.example.net/ns/version/1.2</Type>
+    <Type>http://blgx.example.net/ns/ext/language</Type>
+
+    <Link>
+        <Rel>author</Rel>
+        <URI>http://blog.example.com/author/steve</URI>
+        <MediaType>text/html</MediaType>
+    </Link>
+    <Link>
+        <Rel>http://blgx.example.net/ns/relation/main_photo</Rel>
+        <URITemplate>{uri};photo</URITemlate>
+        <MediaType>image/jpeg</MediaType>
+    </Link>
+</XRD>
