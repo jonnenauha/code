@@ -66,10 +66,10 @@ public class XRDParser
         result_ = new XRDDocument ();
         cursor_ = doc_.CreateNavigator();
 
-        expires_exp_ = cursor_.Compile ("/Expires");
-        subject_exp_ = cursor_.Compile ("/Subject");
-        aliases_exp_ = cursor_.Compile ("/Alias");
-        types_exp_ = cursor_.Compile ("/Type");
+        expires_exp_ = cursor_.Compile ("/XRD/Expires");
+        subject_exp_ = cursor_.Compile ("/XRD/Subject");
+        aliases_exp_ = cursor_.Compile ("/XRD/Alias");
+        types_exp_ = cursor_.Compile ("/XRD/Type");
     }
 
     public XRDDocument Document
@@ -88,12 +88,13 @@ public class XRDParser
         var aliases = get_all_ (cursor_.Select (aliases_exp_));
         var types = get_all_ (cursor_.Select (types_exp_));
 
-        if ((expires.Count != 1) || (subject.Count != 1) || 
-                (aliases.Count < 1) || (types.Count < 1)) 
+        if ((expires.Count != 1) || (subject.Count != 1) || (aliases.Count < 1) || (types.Count < 1)) 
             throw new XRDParseException ("incorrect number of tags");
 
         result_.expires_ = expires[0];
         result_.subject_ = subject[0];
+        result_.aliases_ = aliases;
+        result_.types_ = types;
     }
 
     private List <string> get_all_ (XPathNodeIterator iter)
@@ -112,5 +113,7 @@ public class XRDParser
 
         Console.WriteLine ("expires: " + doc.Expires);
         Console.WriteLine ("subject: " + doc.Subject);
+        foreach (string s in doc.Aliases) Console.WriteLine ("aliases: " + s);
+        foreach (string s in doc.Types) Console.WriteLine ("types: " + s);
     }
 }
