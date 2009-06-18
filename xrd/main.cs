@@ -10,10 +10,10 @@ public class XRDParser
     {
         public class XRDLink 
         {
-            protected string relation_;
-            protected string uri_template_;
-            protected Uri uri_;
-            protected string media_type_;
+            private string relation_;
+            private string uri_template_;
+            private Uri uri_;
+            private string media_type_;
 
             XRDLink (string relation, string uritemplate, Uri uri, string mediatype)
             {
@@ -29,25 +29,36 @@ public class XRDParser
             public string MediaType { get { return media_type_; } }
         }
 
-        protected string expires_ = new string (); //TODO: should be a time data type
-        protected string subject_ = new string ();
-        protected List <string> aliases_ = new List <string> (); 
-        protected List <string> types_ = new List <string> (); 
-        protected List <XRDLink> links_ = new List <XRDLinks> (); 
+        private string expires_; //TODO: should be a time data type
+        private string subject_; 
+        private List <string> aliases_ = new List <string> (); 
+        private List <string> types_ = new List <string> (); 
+        private List <XRDLink> links_ = new List <XRDLink> (); 
+        
+        public string Expires { get { return expires_; } }
+        public string Subject { get { return subject_; } }
+        public List <string> Aliases { get { return aliases_; } }
+        public List <string> Types { get { return types_; } }
+        public List <XRDLink> Links { get { return links_; } }
     }
 
-    protected XPathDocument doc_;
-    protected XPathNavigator cursor_;
+    private XPathDocument doc_;
+    private XPathNavigator cursor_;
 
-    protected XPathExpression expires_exp_;
-    protected XPathExpression subject_exp_;
-    protected XPathExpression aliases_exp_;
-    protected XPathExpression types_exp_;
+    private XRDDocument result_;
+    private bool parsed_ = false;
+
+    private XPathExpression expires_exp_;
+    private XPathExpression subject_exp_;
+    private XPathExpression aliases_exp_;
+    private XPathExpression types_exp_;
     
     public XRDParser (Stream xrd)
     {
         doc_ = new XPathDocument (xrd);
+        result_ = new XRDDocument ();
         cursor_ = doc_.CreateNavigator();
+
         expires_exp_ = cursor_.Compile ("/Expires");
         subject_exp_ = cursor_.Compile ("/Subject");
         aliases_exp_ = cursor_.Compile ("/Alias");
@@ -58,15 +69,21 @@ public class XRDParser
     {
         get
         {
-            XRDDocument result = new XRDDocument();
-            set_all_ (cursor_.Select (expires_exp_), result.expires_);
+            if (!parsed_)
+            {
+                var expires = get_all_ <string> (cursor_.Select (expires_exp_));
+            }
+
+            return result_;
         }
     }
 
-    private void set_all_ <T> (XPathNodeIterator iter, List <T> list)
+    private List <T> get_all_ <T> (XPathNodeIterator iter)
     {
+        var list = new List <T> ();
         while (iter.MoveNext())
             list.Add (iter.Current.Value);
+        return list;
     }
 
     public static void Main()
