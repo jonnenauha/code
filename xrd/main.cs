@@ -71,16 +71,19 @@ public class XRDParser
         {
             if (!parsed_)
             {
-                var expires = get_all_ <string> (cursor_.Select (expires_exp_));
+                var expires = get_all_ (cursor_.Select (expires_exp_));
+                var subject = get_all_ (cursor_.Select (subject_exp_));
+                var aliases = get_all_ (cursor_.Select (aliases_exp_));
+                var types = get_all_ (cursor_.Select (types_exp_));
             }
 
             return result_;
         }
     }
 
-    private List <T> get_all_ <T> (XPathNodeIterator iter)
+    private List <string> get_all_ (XPathNodeIterator iter)
     {
-        var list = new List <T> ();
+        var list = new List <string> ();
         while (iter.MoveNext())
             list.Add (iter.Current.Value);
         return list;
