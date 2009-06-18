@@ -4,16 +4,23 @@ using System.Xml;
 using System.Xml.XPath;
 using System.Collections.Generic;
 
+public class XRDParseException : System.Exception
+{
+    public XRDParseException () : base () {}
+    public XRDParseException (string msg) : base (msg) {}
+    public XRDParseException (string msg, System.Exception inner) : base (msg, inner) {}
+}
+
 public class XRDParser
 {
     public class XRDDocument
     {
         public class XRDLink 
         {
-            private string relation_;
-            private string uri_template_;
-            private Uri uri_;
-            private string media_type_;
+            internal string relation_;
+            internal string uri_template_;
+            internal Uri uri_;
+            internal string media_type_;
 
             XRDLink (string relation, string uritemplate, Uri uri, string mediatype)
             {
@@ -29,11 +36,11 @@ public class XRDParser
             public string MediaType { get { return media_type_; } }
         }
 
-        private string expires_; //TODO: should be a time data type
-        private string subject_; 
-        private List <string> aliases_ = new List <string> (); 
-        private List <string> types_ = new List <string> (); 
-        private List <XRDLink> links_ = new List <XRDLink> (); 
+        internal string expires_; //TODO: should be a time data type
+        internal string subject_; 
+        internal List <string> aliases_ = new List <string> (); 
+        internal List <string> types_ = new List <string> (); 
+        internal List <XRDLink> links_ = new List <XRDLink> (); 
         
         public string Expires { get { return expires_; } }
         public string Subject { get { return subject_; } }
@@ -69,16 +76,24 @@ public class XRDParser
     {
         get
         {
-            if (!parsed_)
-            {
-                var expires = get_all_ (cursor_.Select (expires_exp_));
-                var subject = get_all_ (cursor_.Select (subject_exp_));
-                var aliases = get_all_ (cursor_.Select (aliases_exp_));
-                var types = get_all_ (cursor_.Select (types_exp_));
-            }
-
+            if (!parsed_) parse_ ();
             return result_;
         }
+    }
+
+    private void parse_ ()
+    {
+        var expires = get_all_ (cursor_.Select (expires_exp_));
+        var subject = get_all_ (cursor_.Select (subject_exp_));
+        var aliases = get_all_ (cursor_.Select (aliases_exp_));
+        var types = get_all_ (cursor_.Select (types_exp_));
+
+        if ((expires.Count != 1) || (subject.Count != 1) || 
+                (aliases.Count < 1) || (types.Count < 1)) 
+            throw new XRDParseException ("incorrect number of tags");
+
+        result_.expires_ = expires[0];
+        result_.subject_ = subject[0];
     }
 
     private List <string> get_all_ (XPathNodeIterator iter)
@@ -91,6 +106,11 @@ public class XRDParser
 
     public static void Main()
     {
+        var xrdfile = new FileStream ("xrd.xml", FileMode.Open);
+        var parser = new XRDParser (xrdfile);
+        var doc = parser.Document;
 
+        Console.WriteLine ("expires: " + doc.Expires);
+        Console.WriteLine ("subject: " + doc.Subject);
     }
 }
