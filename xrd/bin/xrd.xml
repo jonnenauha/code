@@ -13,9 +13,9 @@
         <URI>http://blog.example.com/author/steve</URI>
         <MediaType>text/html</MediaType>
     </Link>
-    <Link>
+    <!--Link>
         <Rel>http://blgx.example.net/ns/relation/main_photo</Rel>
         <URITemplate>{uri};photo</URITemlate>
         <MediaType>image/jpeg</MediaType>
-    </Link>
+    </Link-->
 </XRD>
