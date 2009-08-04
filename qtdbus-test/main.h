@@ -25,34 +25,46 @@ class Test : public QObject
             if (!entityi->isValid() || !servicei->isValid()) 
             { 
                 cerr << qPrintable (QDBusConnection::sessionBus().lastError().message()) << endl;
-                QCoreApplication::instance()-> quit();
+                //QCoreApplication::instance()-> quit();
             }
 
-            // Properties
-            entityi->setProperty ("component", "wtf");
-            if (entityi->lastError().isValid())
-                cerr << "error: " << qPrintable (entityi->lastError().message()) << endl;
+            QVariant preply;
+            QDBusReply<int> mreply;
 
-            QVariant preply = entityi->property ("component");
-            if (entityi->lastError().isValid())
-                cerr << "error: " << qPrintable (entityi->lastError().message()) << endl;
+            QTime t; t.start();
 
-            if (!preply.isNull())
-                cout << "component = " << qPrintable (preply.toString()) << endl;
+            mreply = entityi->call ("go_nuts");
 
-            // Methods
-            QDBusReply<int> mreply = servicei->call ("lart", 3);
-            if (mreply.isValid())
-                cout << "Reply was: " << mreply.value() << endl;
-            else
-                cerr << "no reply?!" << endl;
+            //for (int i=0; i < 90000; ++i)
+            //{
+            //    // Properties
+            //    entityi->setProperty ("component", "wtf");
+            //    preply = entityi->property ("component");
 
-            mreply = servicei->call ("lart", 2);
-            if (mreply.isValid())
-                cout << "Reply was: " << mreply.value() << endl;
-            else
-                cerr << "no reply?!" << endl;
+            //    if (entityi->lastError().isValid())
+            //        cerr << "error: " << qPrintable (entityi->lastError().message()) << endl;
+
+            //    if (!preply.isNull())
+            //        cout << "component = " << qPrintable (preply.toString()) << endl;
+
+            //    // Methods
+            //    mreply = servicei->call ("lart", 3);
+            //    mreply = servicei->call ("lart", 2);
+
+            //    if (mreply.isValid())
+            //        cout << "Reply was: " << mreply.value() << endl;
+            //    else
+            //        cerr << "no reply?!" << endl;
+            //}
+
+            int elapsed (t.elapsed());
+            cout << "test (elapsed ms): " << elapsed << endl;
         }
+
+    void component_listener (QString c)
+    {
+        //cout << "component changed: " << qPrintable (c) << endl;
+    }
 
     private:
         QDBusInterface *entityi;

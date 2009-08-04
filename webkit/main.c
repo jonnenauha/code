@@ -36,14 +36,11 @@ static gint load_progress;
 static guint status_context_id;
 
 static GdkPixmap *snap;
-static GtkWidget *snap_img;
-static GtkWidget *snap_win;
 
 static void
 take_snapshot (GtkWidget *w)
 {
     snap = gtk_widget_get_snapshot (GTK_WIDGET (w), NULL);
-    if (snap) gtk_image_set_from_pixmap (GTK_IMAGE (snap_img), snap, NULL);
 }
 
 static void
@@ -148,7 +145,8 @@ create_browser ()
     web_view = WEBKIT_WEB_VIEW (webkit_web_view_new ());
     gtk_container_add (GTK_CONTAINER (scrolled_window), GTK_WIDGET (web_view));
 
-    gtk_widget_add_events (scrolled_window, GDK_ALL_EVENTS_MASK);
+    //gtk_widget_add_events (scrolled_window, GDK_ALL_EVENTS_MASK);
+    webkit_web_view_set_transparent (web_view, TRUE);
 
     g_signal_connect (web_view, "title-changed", G_CALLBACK (title_change_cb), web_view);
     g_signal_connect (web_view, "load-progress-changed", G_CALLBACK (progress_change_cb), web_view);
@@ -216,8 +214,6 @@ create_window ()
 {
     GtkWidget* window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size (GTK_WINDOW (window), 800, 600);
-    gtk_widget_set_name (window, "GtkLauncher");
-
     g_signal_connect (G_OBJECT (window), "destroy", G_CALLBACK (destroy_cb), NULL);
 
     return window;
@@ -236,21 +232,18 @@ main (int argc, char* argv[])
     gtk_box_pack_start (GTK_BOX (vbox), create_statusbar (), FALSE, FALSE, 0);
 
     main_window = create_window ();
+
+    GdkColor red;
+    gdk_color_parse ("red", &red);
+    gtk_widget_modify_bg (main_window, GTK_STATE_NORMAL, &red);
+
     gtk_container_add (GTK_CONTAINER (main_window), vbox);
-
-    snap_win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size (GTK_WINDOW (snap_win), 800, 600);
-    gtk_widget_set_name (snap_win, "back buffer");
-
-    snap_img = gtk_image_new ();
-    gtk_container_add (GTK_CONTAINER (snap_win), snap_img);
 
     gchar* uri = (gchar*) (argc > 1 ? argv[1] : "http://www.google.com/");
     webkit_web_view_load_uri (web_view, uri);
 
     gtk_widget_grab_focus (GTK_WIDGET (web_view));
     gtk_widget_show_all (main_window);
-    gtk_widget_show_all (snap_win);
 
     gtk_main ();
 

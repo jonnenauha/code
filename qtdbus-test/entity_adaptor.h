@@ -9,8 +9,8 @@
  * before re-generating it.
  */
 
-#ifndef ENTITY_ADAPTOR_H_1249386283
-#define ENTITY_ADAPTOR_H_1249386283
+#ifndef ENTITY_ADAPTOR_H_1249392947
+#define ENTITY_ADAPTOR_H_1249392947
 
 #include <QtCore/QObject>
 #include <QtDBus/QtDBus>
@@ -31,6 +31,10 @@ class EntityAdaptor: public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Introspection", ""
 "  <interface name=\"org.realxtend.Test.Entity\" >\n"
 "    <property access=\"readwrite\" type=\"s\" name=\"component\" />\n"
+"    <signal name=\"component_changed\" >\n"
+"      <arg direction=\"out\" type=\"s\" name=\"c\" />\n"
+"    </signal>\n"
+"    <method name=\"go_nuts\" />\n"
 "  </interface>\n"
         "")
 public:
@@ -43,7 +47,9 @@ public: // PROPERTIES
     void setComponent(const QString &value);
 
 public Q_SLOTS: // METHODS
+    void go_nuts();
 Q_SIGNALS: // SIGNALS
+    void component_changed(const QString &c);
 };
 
 #endif

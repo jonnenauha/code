@@ -28,4 +28,6 @@ if [ -f /etc/bashrc ]; then
     . /etc/bashrc
 fi
 
+# VIM power
 set -o vi 
+export EDITOR=vim

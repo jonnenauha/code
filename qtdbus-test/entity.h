@@ -6,6 +6,7 @@
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
+#include <iostream>
 #include <QtCore/QObject>
 
 class Entity : public QObject
@@ -27,8 +28,16 @@ class Entity : public QObject
             Q_EMIT component_changed (v);
         }
 
+    public Q_SLOTS:
+        void go_nuts ()
+        {
+            std::cout << "wtf" << std::endl;
+            for (int i=0; i < 90000; ++i)
+                Q_EMIT component_changed ("hello");
+        }
+
     Q_SIGNALS: 
-        void component_changed (QString &c);
+        void component_changed (const QString &c);
 
     private:
         QString component_;

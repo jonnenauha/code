@@ -42,10 +42,17 @@ main (int argc, char** argv)
         exit(1);
     }
     
+    // Subscribe to Signals
+    t.connect 
+        (entadapter, 
+         SIGNAL (component_changed(QString)), 
+         SLOT (component_listener(QString)));
+
+    // Start when a new service is added (us)
     t.connect 
         (QDBusConnection::sessionBus().interface(), 
-         SIGNAL(serviceOwnerChanged(QString,QString,QString)), 
-         SLOT(start(QString,QString,QString)));
+         SIGNAL (serviceOwnerChanged(QString,QString,QString)), 
+         SLOT (start(QString,QString,QString)));
 
     app.exec ();
     return 0;

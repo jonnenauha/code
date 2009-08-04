@@ -2,5 +2,10 @@
 <node>
   <interface name="org.realxtend.Test.Entity">
     <property name="component" type="s" access="readwrite"/>
+    <signal name="component_changed">
+      <arg name="c" type="s" direction="out"/>
+    </signal>
+    <method name="go_nuts">
+    </method>
   </interface>
 </node>

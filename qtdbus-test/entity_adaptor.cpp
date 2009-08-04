@@ -45,3 +45,9 @@ void EntityAdaptor::setComponent(const QString &value)
     parent()->setProperty("component", qVariantFromValue(value));
 }
 
+void EntityAdaptor::go_nuts()
+{
+    // handle method call org.realxtend.Test.Entity.go_nuts
+    QMetaObject::invokeMethod(parent(), "go_nuts");
+}
+
