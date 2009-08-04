@@ -1,0 +1,10 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.realxtend.Test.Service">
+    <property name="value" type="i" access="read"/>
+    <method name="lart">
+      <arg type="i" direction="out"/>
+      <arg name="v" type="i" direction="in"/>
+    </method>
+  </interface>
+</node>
