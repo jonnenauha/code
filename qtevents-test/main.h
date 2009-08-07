@@ -11,35 +11,19 @@
 #include <string>
 #include <vector>
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QObject>
 #include <QtCore/QEvent>
-#include <QtCore/QCoreApplication>
+#include <QtCore/QTime>
 #include <QtCore/QThread>
 #include <QtCore/QSharedData>
 #include <QtCore/QMetaType>
 
 using namespace std;
 
-// use boost singletons
-template <typename T>
-class Singleton
-{
-    public:
-        static T *instance ()
-        {
-            static T instance;
-            return &instance;
-        }
-};
-
-// pretend this is the naali programming framework
-class Framework : public QObject, public Singleton <Framework>
-{
-    Q_OBJECT
-
-    public:
-    private:
-};
+extern const int NPACKETS;
+extern QTime glb_timer;
+extern int glb_time;
 
 // shared data is reference counted 
 struct NetworkInData : public QSharedData
@@ -51,12 +35,13 @@ struct NetworkInData : public QSharedData
 // shared data is reference counted 
 struct NetworkOutData : public QSharedData
 {
-        NetworkOutData (std::string d) : data (d) {}
+        NetworkOutData (std::string &d) : data (d) {}
         std::string data;
 };
 
 // event points to the packet data
 // shared data pointer deletes data when refcount == 0
+// QObjects cannot be passed over thread signal queue
 class NetworkInEvent
 {
     public:
@@ -70,6 +55,7 @@ Q_DECLARE_METATYPE (NetworkInEvent); // required for signal/slot
 
 // event points to the packet data
 // shared data pointer deletes data when refcount == 0
+// QObjects cannot be passed over thread signal queue
 class NetworkOutEvent
 {
     public:
@@ -88,10 +74,9 @@ class Network : public QThread
 
     public:
         Network () 
-            : n_ (10)
         {
             std::stringstream ss;
-            for (int i=0; i < n_; ++i)
+            for (int i=0; i < NPACKETS; ++i)
             {
                 ss << i;
                 inqueue_.push_back ("in " + ss.str());
@@ -107,9 +92,10 @@ class Network : public QThread
     protected:
         void run ()
         {
-            for (int i=0; i < n_; ++i)
+            glb_timer.start();
+            for (int i=0; i < NPACKETS; ++i)
             {
-                cout << "sending packets!" << endl;
+                //cout << "sending packets!" << endl;
 
                 NetworkInEvent in (new NetworkInData (inqueue_[i]));
                 NetworkOutEvent out (new NetworkOutData (outqueue_[i]));
@@ -120,7 +106,6 @@ class Network : public QThread
         }
 
     private:
-        int n_;
         std::vector <std::string> inqueue_;
         std::vector <std::string> outqueue_;
 };
@@ -133,24 +118,34 @@ class NetworkListener : public QThread
     Q_OBJECT
 
     public:
-        NetworkListener () { }
+        NetworkListener () 
+            : packets_observed_ (0) {}
 
     public Q_SLOTS:
 
         void received (NetworkInEvent event)
         {
-            cout << "received: " << event.packet->data << endl;
+            //cout << "received: " << event.packet->data << endl;
+            ++ packets_observed_;
         }
 
         void sent (NetworkOutEvent event)
         {
-            cout << "sent: " << event.packet->data << endl;
+            //cout << "sent: " << event.packet->data << endl;
+            ++ packets_observed_;
         }
 
     protected:
-        void run () { while (true) QThread::usleep (1000); }
+        void run () 
+        { 
+            while (packets_observed_ < NPACKETS*2);
+
+            int elapsed (glb_timer.elapsed());
+            cout << "elapsed (ms): " << elapsed << endl;
+        }
 
     private:
+        int packets_observed_;
 };
 
 #endif //_MAIN_H_

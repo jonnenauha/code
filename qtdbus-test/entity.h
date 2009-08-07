@@ -32,7 +32,7 @@ class Entity : public QObject
         void go_nuts ()
         {
             std::cout << "wtf" << std::endl;
-            for (int i=0; i < 90000; ++i)
+            for (int i=0; i < 15000; ++i)
                 Q_EMIT component_changed ("hello");
         }
 

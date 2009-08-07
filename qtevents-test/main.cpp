@@ -5,6 +5,10 @@
 
 #include "main.h"
 
+const int NPACKETS (35000);
+QTime glb_timer;
+int glb_time;
+
 //=============================================================================
 // Main entry point
 int
