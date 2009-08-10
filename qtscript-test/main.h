@@ -20,26 +20,42 @@ using namespace std;
 class ExistingClass : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString capabilities READ capabilities WRITE set_capabilities)
 
     public:
-        ExistingClass () : foo_ (0) {}
+        ExistingClass () : value_ (0) {}
+
+        QString capabilities () const { return caps_; }
+        void set_capabilities (const QString &s) { caps_ = s; }
 
     public Q_SLOTS:
+        int value () const { return value_; }
+        void set_value (int v) { value_ = v; }
+
         void foo ()
         {
-            cout << foo_ << endl;
+            cout << value_ << endl;
+            Q_EMIT poked ();
         }
 
         int lart (int v)
         {
-            foo_ += v;
+            value_ += v;
+            Q_EMIT action (value_);
+        }
+
+        void on_poke ()
+        {
+            cout << "someone poked me" << endl;
         }
 
     Q_SIGNALS:
-        void action ();
+        void action (int f);
+        void poked ();
 
     private:
-        int foo_;
+        int value_;
+        QString caps_;
 };
 
 #endif //_MAIN_H_
