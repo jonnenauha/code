@@ -5,15 +5,8 @@
 
 #include "main.h"
 
-
-//=============================================================================
-// Main entry point
-int
-main (int argc, char** argv)
+void test (QCoreApplication &app, QScriptEngine &engine)
 {
-    QCoreApplication app (argc, argv);
-    QScriptEngine engine;
-
     cout << "-- making existing object" << endl;
     ExistingClass *existing (new ExistingClass);
     QScriptValue js_existing = engine.newQObject (existing);
@@ -51,6 +44,17 @@ main (int argc, char** argv)
 
     cout << "-- dumping object" << endl;
     engine.evaluate ("for (k in enhanced) { print ( enhanced + '[' + k + ']' + enhanced[k]); }");
+}
+
+//=============================================================================
+// Main entry point
+int
+main (int argc, char** argv)
+{
+    QCoreApplication app (argc, argv);
+    QScriptEngine engine;
+
+    test (app, engine);
 
     return app.exec();
 }
