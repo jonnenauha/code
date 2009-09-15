@@ -6,11 +6,13 @@ cmake_minimum_required (VERSION 2.6)
 # cmake_install_prefix (/usr)       # where make install points
 # cmake_build_type ()               # debug, release, ...
 # build_shared_libs ()              # switch between static/shared
+
+# find_package (PkgConfig)
 # pkg_check_modules (PREFIX module) # use pkg-config to find module
 
 # add_subdirectory (.)              # recurse into subdirs
 
-# include_directories (.)           # Add include directories to the build.
+# include_directories (.)           # Specify directories in which the preprocessor will look for includes.
 # link_directories (.)              # Specify directories in which the linker will look for libraries.
 
 # add_definitions (-DLART)          # Adds -D define flags to the compilation of source files.
