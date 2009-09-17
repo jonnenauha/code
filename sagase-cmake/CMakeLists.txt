@@ -5,9 +5,10 @@ cmake_minimum_required (VERSION 2.6)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ".")
 include (Sagase)
 
-sagase_configure_package (GLIB
-    NAMES glib-2.0
-    COMPONENTS glib glib-2.0)
+sagase_configure_package (CAELUM
+    NAMES Caelum
+    COMPONENTS Caelum
+    PREFIXES "/home/ryanm/Code/viewerdeps")
 
 #sagase_generate_paths (BOOST NAMES Boost boost BOOST PREFIXES "C:") 
 

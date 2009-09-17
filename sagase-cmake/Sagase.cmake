@@ -1,3 +1,4 @@
+# -- Ryan McDougall, realXtend -- 2009
 
 # parse a keyword delimited list of arguments into single list
 # results are in ${BEGIN}_ARGS
@@ -53,21 +54,30 @@ macro (sagase_generate_paths PREFIX)
     endforeach ()
 endmacro ()
 
-# tries a series of methods to find correct compile and link info
-# "NAMES" is a list of names by which the package is known
-# "COMPONENTS" is a list of sub-components that are required
-# "PREFIXES" is a list of path prefixes where the components might be found
+# tries a series of methods to find correct compile and link info.
+# "NAMES" is a list of names by which the package is known. used by
+# find_package and in constructing search path names.
+# "COMPONENTS" is a list of sub-components that are required. used by
+# find_package and by pkg-config.
+# "PREFIXES" is a list of path prefixes where the components might be found.
 # results are in ${PREFIX}_INCLUDE_DIRS, ${PREFIX}_LIBRARY_DIRS, 
-# ${PREFIX}_LIBRARIES, ${PREFIX}_DEFINITIONS, or fatal error
+# ${PREFIX}_LIBRARIES, ${PREFIX}_DEFINITIONS, or fatal error.
 
 # example usages: 
 # sagase_configure_package (BOOST 
 #     NAMES BOOST Boost 
 #     COMPONENTS date_time filesystem system thread
 #     PREFIXES "C:")
+#
 # sagase_configure_package (GLIB
 #     NAMES glib-2.0
 #     COMPONENTS glib glib-2.0)
+#
+# sagase_configure_package (CAELUM
+#     NAMES Caelum
+#     COMPONENTS Caelum
+#     PREFIXES $ENV{NAALI_DEP_PATH})
+
 
 macro (sagase_configure_package PREFIX)
     sagase_parse_arguments ("NAMES" "COMPONENTS" ${ARGN})
