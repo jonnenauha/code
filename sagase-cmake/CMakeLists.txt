@@ -5,10 +5,9 @@ cmake_minimum_required (VERSION 2.6)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ".")
 include (Sagase)
 
-sagase_configure_package (BOOST 
-    NAMES Bloost BOOST Boost 
-    COMPONENTS date_time filesystem system thread program_options unit_test_framework 
-    PREFIXES "C:")
+sagase_configure_package (GLIB
+    NAMES glib-2.0
+    COMPONENTS glib glib-2.0)
 
 #sagase_generate_paths (BOOST NAMES Boost boost BOOST PREFIXES "C:") 
 

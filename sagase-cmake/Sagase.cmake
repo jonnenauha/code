@@ -1,3 +1,4 @@
+
 # parse a keyword delimited list of arguments into single list
 # results are in ${BEGIN}_ARGS
 macro (sagase_parse_arguments BEGIN END)
@@ -58,6 +59,16 @@ endmacro ()
 # "PREFIXES" is a list of path prefixes where the components might be found
 # results are in ${PREFIX}_INCLUDE_DIRS, ${PREFIX}_LIBRARY_DIRS, 
 # ${PREFIX}_LIBRARIES, ${PREFIX}_DEFINITIONS, or fatal error
+
+# example usages: 
+# sagase_configure_package (BOOST 
+#     NAMES BOOST Boost 
+#     COMPONENTS date_time filesystem system thread
+#     PREFIXES "C:")
+# sagase_configure_package (GLIB
+#     NAMES glib-2.0
+#     COMPONENTS glib glib-2.0)
+
 macro (sagase_configure_package PREFIX)
     sagase_parse_arguments ("NAMES" "COMPONENTS" ${ARGN})
     sagase_parse_arguments ("COMPONENTS" "PREFIXES" ${ARGN})
@@ -69,10 +80,6 @@ macro (sagase_configure_package PREFIX)
 
     set (found_ FALSE)
     foreach (name_ ${PKG_NAMES})
-
-        if (found_)
-            break ()
-        endif ()
 
         message (STATUS "trying find_package: " ${name_})
 
@@ -86,6 +93,7 @@ macro (sagase_configure_package PREFIX)
             set (${PREFIX}_LIBRARY_DIRS ${${name_}_LIBRARY_DIRS})
             set (${PREFIX}_DEFINITIONS ${${name_}_CFLAGS_OTHER})
             set (found_ TRUE)
+            break ()
 
         else ()
             # try system module manager
@@ -102,6 +110,7 @@ macro (sagase_configure_package PREFIX)
                 # non-linux OSes may be a problem
                 message (STATUS "tring pkg_check_modules: " ${name_})
 
+                include (FindPkgConfig)
                 if (PKG_CONFIG_FOUND)
                     pkg_check_modules(${PREFIX} ${name_})
                 else ()
@@ -114,6 +123,7 @@ macro (sagase_configure_package PREFIX)
                     # ${PREFIX}_LIBRARY_DIRS, ${PREFIX}_LIBRARIES
                     set (${PREFIX}_DEFINITIONS ${${PREFIX}_CFLAGS_OTHER})
                     set (found_ TRUE)
+                    break ()
                 endif ()
 
             else ()
@@ -144,10 +154,10 @@ macro (sagase_configure_package PREFIX)
         foreach (component_ ${PKG_COMPONENTS})
             
             # get header path
-            find_path (${PREFIX}_${component_}_INCLUDE_DIR ${component_}".h" ${${PREFIX}_INCLUDE_PATHS})
+            find_path (${PREFIX}_${component_}_INCLUDE_DIR ${component_}.h ${${PREFIX}_INCLUDE_PATHS})
             
             if (${PREFIX}_${component_}_INCLUDE_DIR)
-                set (${PREFIX}_INCLUDE_DIRS ${{PREFIX}_INCLUDE_DIRS} ${PREFIX}_${component_}_INCLUDE_DIR)
+                set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
             endif ()
 
             # get library path
@@ -155,13 +165,21 @@ macro (sagase_configure_package PREFIX)
                 find_path (${PREFIX}_${component_}_LIBRARY_DIR ${LIB_PREFIX}${component_}${extension_} ${${PREFIX}_LIBRARY_PATHS})
 
                 if (${PREFIX}_${component_}_LIBRARY_DIR)
-                    set (${PREFIX}_LIBRARY_DIRS ${{PREFIX}_LIBRARY_DIRS} ${PREFIX}_${component_}_LIBRARY_DIR)
+                    set (${PREFIX}_LIBRARY_DIRS ${${PREFIX}_LIBRARY_DIRS} ${${PREFIX}_${component_}_LIBRARY_DIR})
+                    break () # static and dynamic libs usually in the same dir
                 endif ()
             endforeach ()
         endforeach ()
     endif ()
 
-    if (NOT ${PREFIX}_INCLUDE_DIRS OR NOT ${PREFIX}_LIBRARY_DIRS OR NOT ${PREFIX}_LIBRARIES)
-        message (FATAL_ERROR "sagase: unable to configure " ${PREFIX}) 
+    if (NOT found_ AND NOT ${PREFIX}_INCLUDE_DIRS AND NOT ${PREFIX}_LIBRARY_DIRS AND NOT ${PREFIX}_LIBRARIES)
+        message (FATAL_ERROR "!! sagase: unable to configure " ${PREFIX}) 
     endif ()
+    
+    message (STATUS "sagase: " ${PREFIX} " Configure Results.")
+    message (STATUS "-- Include Directories: " ${${PREFIX}_INCLUDE_DIRS})
+    message (STATUS "-- Libarary Directories: " ${${PREFIX}_LIBRARY_DIRS})
+    message (STATUS "-- Libraries: " ${${PREFIX}_LIBRARIES})
+    message (STATUS "-- Defines: " ${${PREFIX}_DEFINITIONS})
+
 endmacro ()
