@@ -41,19 +41,29 @@ macro (sagase_generate_paths PREFIX)
 
     # add prefix paths
     foreach (prefix_ ${PATH_PREFIXES})
-        set (${PREFIX}_INCLUDE_PATHS ${${PREFIX}_INCLUDE_PATHS} ${prefix_}/include)
-        set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} ${prefix_}/lib)
-        set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} ${prefix_}/bin)
-        set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} ${prefix_}/dll)
+
+        set (${PREFIX}_INCLUDE_PATHS ${${PREFIX}_INCLUDE_PATHS} 
+            ${prefix_}/include)
+
+        set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} 
+            ${prefix_}/lib
+            ${prefix_}/bin 
+            ${prefix_}/dll)
+
     endforeach ()
 
     # add prefix+name paths
     foreach (prefix_ ${PATH_PREFIXES})
         foreach (pkgname_ ${PATH_NAMES})
-            set (${PREFIX}_INCLUDE_PATHS ${${PREFIX}_INCLUDE_PATHS} ${prefix_}/${pkgname_}/include ${prefix_}/include/${pkgname_})
-            set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} ${prefix_}/${pkgname_}/lib ${prefix_}/lib/${pkgname_})
-            set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} ${prefix_}/${pkgname_}/bin ${prefix_}/bin/${pkgname_})
-            set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} ${prefix_}/${pkgname_}/dll ${prefix_}/dll/${pkgname_})
+
+            set (${PREFIX}_INCLUDE_PATHS ${${PREFIX}_INCLUDE_PATHS} 
+                ${prefix_}/${pkgname_}/include ${prefix_}/include/${pkgname_})
+
+            set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} 
+                ${prefix_}/${pkgname_}/lib ${prefix_}/lib/${pkgname_}
+                ${prefix_}/${pkgname_}/bin ${prefix_}/bin/${pkgname_}
+                ${prefix_}/${pkgname_}/dll ${prefix_}/dll/${pkgname_})
+
         endforeach ()
     endforeach ()
 endmacro ()
