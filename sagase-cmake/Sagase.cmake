@@ -74,8 +74,14 @@ endmacro ()
 # "COMPONENTS" is a list of sub-components that are required. used by
 # find_package and by pkg-config.
 # "PREFIXES" is a list of path prefixes where the components might be found.
+# "SKIP_FIND_PACKAGE" causes it to bypass find_package
 # results are in ${PREFIX}_INCLUDE_DIRS, ${PREFIX}_LIBRARY_DIRS, 
 # ${PREFIX}_LIBRARIES, ${PREFIX}_DEFINITIONS, or fatal error.
+
+# Tryies the following methods to find a package
+# 1. find_package
+# 2. OS-dependent (pkg-config, framework, etc.)
+# 3. find_path 
 
 # example usages: 
 # sagase_configure_package (BOOST 
@@ -103,15 +109,18 @@ macro (sagase_configure_package PREFIX)
     set (PKG_PREFIXES ${PREFIXES_ARGS})
 
     set (found_ FALSE)
+
     foreach (name_ ${PKG_NAMES})
 
-        message (STATUS "trying find_package: " ${name_})
-
-        # try built-in CMake modules first
-        find_package (${name_} QUIET COMPONENTS ${PKG_COMPONENTS})
-
-        # some packages don't respect the return convention properly
         string (TOUPPER ${name_} name_upper_)
+
+        # find_package can't handle packages in all caps (?!)
+        if (NOT name_ STREQUAL name_upper_)
+            message (STATUS "trying find_package: " ${name_})
+
+            # try built-in CMake modules first
+            find_package (${name_} QUIET COMPONENTS ${PKG_COMPONENTS})
+        endif ()
 
         if (${name_}_FOUND OR ${name_upper_}_FOUND)
             message (STATUS "sagase: configured " ${PREFIX})

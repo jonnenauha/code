@@ -5,10 +5,10 @@ cmake_minimum_required (VERSION 2.6)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ".")
 include (Sagase)
 
-sagase_configure_package (QT4 
-    NAMES Caelum
-    COMPONENTS Caelum
-    PREFIXES "/home/ryanm/Code/viewerdeps")
+sagase_configure_package (OGRE 
+    NAMES Ogre OgreSDK ogre OGRE
+    COMPONENTS Ogre ogre OGRE OgreMain 
+    PREFIXES $ENV{NAALI_DEP_PATH} $ENV{OGRE_HOME})
 
 #sagase_generate_paths (BOOST NAMES Boost boost BOOST PREFIXES "C:") 
 
