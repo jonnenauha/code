@@ -1,72 +1,76 @@
 # -- Ryan McDougall, realXtend -- 2009
 
 # parse a keyword delimited list of arguments into single list
-# results are in ${BEGIN}_ARGS
-macro (sagase_parse_arguments BEGIN END)
-    set (take_ FALSE)
-    foreach (variable_ ${ARGN})
-        if (${variable_} STREQUAL ${BEGIN})
-            set (take_ TRUE)
-        elseif (${variable_} STREQUAL ${END})
-            set (take_ FALSE)
+# results are in OUT
+function (sagase_parse_arguments BEGIN END ARGS)
+    set (take FALSE)
+    foreach (var ${ARGN})
+        if (${var} STREQUAL ${BEGIN})
+            set (take TRUE)
+        elseif (${var} STREQUAL ${END})
+            set (take FALSE)
         else ()
-            if (take_)
-                set (${BEGIN}_ARGS ${${BEGIN}_ARGS} ${variable_})
+            if (take)
+                set (out ${out} ${var})
             endif ()
         endif ()
     endforeach ()
-endmacro ()
+
+    set (${ARGS} ${out} PARENT_SCOPE)
+endfunction (sagase_parse_arguments)
 
 
 # generates a set of likely paths for a files (includes or libraries)
 # "NAMES" is a list of names by which the package is known
 # "PREFIXES" is a list of path prefixes where the components might be found
-# results are in ${PREFIX}_INCLUDE_PATHS, ${PREFIX}_LIBRARY_PATHS  
-macro (sagase_generate_paths PREFIX)
-    sagase_parse_arguments ("NAMES" "PREFIXES" ${ARGN})
-    sagase_parse_arguments ("PREFIXES" none ${ARGN})
-    
-    set (PATH_NAMES ${NAMES_ARGS})
-    set (PATH_PREFIXES ${PREFIXES_ARGS})
+# results are in INCLUDE_PATHS, LIBRARY_PATHS  
+function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
+    sagase_parse_arguments ("NAMES" "PREFIXES" path_names ${ARGN})
+    sagase_parse_arguments ("PREFIXES" none path_prefixes ${ARGN})
 
     if (MSVC)
-        set (PATH_PREFIXES ${PATH_PREFIXES} "C:/")
+        set (path_prefixes ${path_prefixes} "C:/")
     elseif (APPLE)
-        message (FATAL_ERROR "sagase: " ${PREFIX} ": MacOS Support incomplete")
+        message (FATAL_ERROR "sagase: MacOS Support incomplete")
     elseif (UNIX)
-        set (PATH_PREFIXES ${PATH_PREFIXES} "/usr" "/usr/local" "/opt")
+        set (path_prefixes ${path_prefixes} "/usr" "/usr/local" "/opt")
     else ()
-        message (FATAL_ERROR "sagase: " ${PREFIX} ": Unable to detect OS type")
+        message (FATAL_ERROR "sagase: Unable to detect OS type")
     endif ()
 
     # add prefix paths
-    foreach (prefix_ ${PATH_PREFIXES})
+    foreach (prefix ${path_prefixes})
 
-        set (${PREFIX}_INCLUDE_PATHS ${${PREFIX}_INCLUDE_PATHS} 
-            ${prefix_}/include)
+        set (includes ${includes} 
+            ${prefix}/includes)
 
-        set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} 
-            ${prefix_}/lib
-            ${prefix_}/bin 
-            ${prefix_}/dll)
+        set (libraries ${libraries} 
+            ${prefix}/lib 
+            ${prefix}/bin 
+            ${prefix}/dll)
 
     endforeach ()
 
     # add prefix+name paths
-    foreach (prefix_ ${PATH_PREFIXES})
-        foreach (pkgname_ ${PATH_NAMES})
+    foreach (prefix ${path_prefixes})
+        foreach (pkgname ${path_names})
 
-            set (${PREFIX}_INCLUDE_PATHS ${${PREFIX}_INCLUDE_PATHS} 
-                ${prefix_}/${pkgname_}/include ${prefix_}/include/${pkgname_})
+            set (includes ${includes} 
+                ${prefix}/${pkgname}/includes 
+                ${prefix}/includes/${pkgname})
 
-            set (${PREFIX}_LIBRARY_PATHS ${${PREFIX}_LIBRARY_PATHS} 
-                ${prefix_}/${pkgname_}/lib ${prefix_}/lib/${pkgname_}
-                ${prefix_}/${pkgname_}/bin ${prefix_}/bin/${pkgname_}
-                ${prefix_}/${pkgname_}/dll ${prefix_}/dll/${pkgname_})
+            set (libraries ${libraries} 
+                ${prefix}/${pkgname}/lib ${prefix}/lib/${pkgname}
+                ${prefix}/${pkgname}/bin ${prefix}/bin/${pkgname}
+                ${prefix}/${pkgname}/dll ${prefix}/dll/${pkgname})
 
         endforeach ()
     endforeach ()
-endmacro ()
+
+    set (${INCLUDE_PATHS} ${includes} PARENT_SCOPE)
+    set (${LIBRARY_PATHS} ${libraries} PARENT_SCOPE)
+
+endfunction (sagase_generate_paths)
 
 # tries a series of methods to find correct compile and link info.
 # "NAMES" is a list of names by which the package is known. used by
@@ -100,13 +104,9 @@ endmacro ()
 
 
 macro (sagase_configure_package PREFIX)
-    sagase_parse_arguments ("NAMES" "COMPONENTS" ${ARGN})
-    sagase_parse_arguments ("COMPONENTS" "PREFIXES" ${ARGN})
-    sagase_parse_arguments ("PREFIXES" none ${ARGN})
-    
-    set (PKG_NAMES ${NAMES_ARGS})
-    set (PKG_COMPONENTS ${COMPONENTS_ARGS})
-    set (PKG_PREFIXES ${PREFIXES_ARGS})
+    sagase_parse_arguments ("NAMES" "COMPONENTS" PKG_NAMES ${ARGN})
+    sagase_parse_arguments ("COMPONENTS" "PREFIXES" PKG_COMPONENTS ${ARGN})
+    sagase_parse_arguments ("PREFIXES" none PKG_PREFIXES ${ARGN})
 
     set (found_ FALSE)
 
@@ -170,10 +170,9 @@ macro (sagase_configure_package PREFIX)
     endforeach ()
 
     if (NOT found_)
-        # results are in ${PREFIX_INCLUDE_PATHS}/${PREFIX_LIBRARY_PATHS}
         message (STATUS "trying brute-force search ")
 
-        sagase_generate_paths (${PREFIX} NAMES ${PKG_NAMES} PREFIXES ${PKG_PREFIXES})
+        sagase_generate_paths (include_paths library_paths NAMES ${PKG_NAMES} PREFIXES ${PKG_PREFIXES})
 
         # follow platform library naming
         if (MSVC)
@@ -190,7 +189,7 @@ macro (sagase_configure_package PREFIX)
         foreach (component_ ${PKG_COMPONENTS})
             
             # get header path
-            find_path (${PREFIX}_${component_}_INCLUDE_DIR ${component_}.h ${${PREFIX}_INCLUDE_PATHS})
+            find_path (${PREFIX}_${component_}_INCLUDE_DIR ${component_}.h ${include_paths})
             
             if (${PREFIX}_${component_}_INCLUDE_DIR)
                 set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
@@ -198,7 +197,7 @@ macro (sagase_configure_package PREFIX)
 
             # get library path
             foreach (extension_ ${LIB_POSTFIXES})
-                find_path (${PREFIX}_${component_}_LIBRARY_DIR ${LIB_PREFIX}${component_}${extension_} ${${PREFIX}_LIBRARY_PATHS})
+                find_path (${PREFIX}_${component_}_LIBRARY_DIR ${LIB_PREFIX}${component_}${extension_} ${library_paths})
 
                 if (${PREFIX}_${component_}_LIBRARY_DIR)
                     set (${PREFIX}_LIBRARIES ${${PREFIX}_LIBRARIES} ${component_})
@@ -233,4 +232,4 @@ macro (sagase_configure_package PREFIX)
     message (STATUS "-- Libraries: " ${${PREFIX}_LIBRARIES})
     message (STATUS "-- Defines: " ${${PREFIX}_DEFINITIONS})
 
-endmacro ()
+endmacro (sagase_configure_package)
