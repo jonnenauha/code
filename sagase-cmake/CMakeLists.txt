@@ -6,9 +6,9 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ".")
 include (Sagase)
 
 sagase_configure_package (QT4 
-    NAMES Qt4 qt4 Qt qt
-    COMPONENTS QtCore QtGui QtWebkit QtScript 
-    PREFIXES $ENV{QTDIR})
+    NAMES Caelum
+    COMPONENTS Caelum
+    PREFIXES "/home/ryanm/Code/viewerdeps")
 
 #sagase_generate_paths (BOOST NAMES Boost boost BOOST PREFIXES "C:") 
 
