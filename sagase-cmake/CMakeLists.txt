@@ -5,9 +5,9 @@ cmake_minimum_required (VERSION 2.6)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ".")
 include (Sagase)
 
-sagase_configure_package (CAELUM
-    NAMES Caelum
-    COMPONENTS Caelum
+sagase_configure_package (POCO
+    NAMES Poco PoCo poco
+    COMPONENTS Poco PocoFoundation PocoNet PocoUtil PocoXML
     PREFIXES "/home/ryanm/Code/viewerdeps")
 
 #sagase_generate_paths (BOOST NAMES Boost boost BOOST PREFIXES "C:") 

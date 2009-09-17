@@ -176,11 +176,13 @@ macro (sagase_configure_package PREFIX)
 
                 if (${PREFIX}_${component_}_LIBRARY_DIR)
                     set (${PREFIX}_LIBRARY_DIRS ${${PREFIX}_LIBRARY_DIRS} ${${PREFIX}_${component_}_LIBRARY_DIR})
-                    break () # static and dynamic libs usually in the same dir
                 endif ()
             endforeach ()
         endforeach ()
     endif ()
+
+    list (REMOVE_DUPLICATES ${PREFIX}_LIBRARY_DIRS)
+    list (REMOVE_DUPLICATES ${PREFIX}_INCLUDE_DIRS)
 
     if (NOT found_ AND NOT ${PREFIX}_INCLUDE_DIRS AND NOT ${PREFIX}_LIBRARY_DIRS AND NOT ${PREFIX}_LIBRARIES)
         message (FATAL_ERROR "!! sagase: unable to configure " ${PREFIX}) 
