@@ -96,7 +96,10 @@ macro (sagase_configure_package PREFIX)
         # try built-in CMake modules first
         find_package (${name_} QUIET COMPONENTS ${PKG_COMPONENTS})
 
-        if (${name_}_FOUND)
+        # some packages don't respect the return convention properly
+        string (TOUPPER ${name_} name_upper_)
+
+        if (${name_}_FOUND OR ${name_upper_}_FOUND)
             message (STATUS "sagase: configured " ${PREFIX})
             set (${PREFIX}_INCLUDE_DIRS ${${name_}_INCLUDE_DIRS})
             set (${PREFIX}_LIBRARIES ${${name_}_LIBRARIES})
@@ -182,14 +185,25 @@ macro (sagase_configure_package PREFIX)
         endforeach ()
     endif ()
 
+    # stop process if nothing is found through any means
     if (NOT found_ AND NOT ${PREFIX}_INCLUDE_DIRS AND NOT ${PREFIX}_LIBRARY_DIRS AND NOT ${PREFIX}_LIBRARIES)
         message (FATAL_ERROR "!! sagase: unable to configure " ${PREFIX}) 
     endif ()
     
-    list (REMOVE_DUPLICATES ${PREFIX}_INCLUDE_DIRS)
-    list (REMOVE_DUPLICATES ${PREFIX}_LIBRARY_DIRS)
-    list (REMOVE_DUPLICATES ${PREFIX}_LIBRARIES)
+    # remove duplicate entires from return variables
+    if (${PREFIX}_INCLUDE_DIRS)
+        list (REMOVE_DUPLICATES ${PREFIX}_INCLUDE_DIRS)
+    endif ()
 
+    if (${PREFIX}_LIBRARY_DIRS)
+        list (REMOVE_DUPLICATES ${PREFIX}_LIBRARY_DIRS)
+    endif ()
+
+    if (${PREFIX}_LIBRARIES)
+        list (REMOVE_DUPLICATES ${PREFIX}_LIBRARIES)
+    endif ()
+
+    # report to screen what was found
     message (STATUS "sagase: " ${PREFIX} " Configure Results.")
     message (STATUS "-- Include Directories: " ${${PREFIX}_INCLUDE_DIRS})
     message (STATUS "-- Libarary Directories: " ${${PREFIX}_LIBRARY_DIRS})

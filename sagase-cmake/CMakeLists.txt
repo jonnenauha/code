@@ -5,10 +5,10 @@ cmake_minimum_required (VERSION 2.6)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ".")
 include (Sagase)
 
-sagase_configure_package (POCO
-    NAMES Poco PoCo poco
-    COMPONENTS Poco PocoFoundation PocoNet PocoUtil PocoXML
-    PREFIXES "/home/ryanm/Code/viewerdeps")
+sagase_configure_package (QT4 
+    NAMES Qt4 qt4 Qt qt
+    COMPONENTS QtCore QtGui QtWebkit QtScript 
+    PREFIXES $ENV{QTDIR})
 
 #sagase_generate_paths (BOOST NAMES Boost boost BOOST PREFIXES "C:") 
 
