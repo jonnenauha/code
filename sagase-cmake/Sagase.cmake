@@ -175,19 +175,21 @@ macro (sagase_configure_package PREFIX)
                 find_path (${PREFIX}_${component_}_LIBRARY_DIR ${LIB_PREFIX}${component_}${extension_} ${${PREFIX}_LIBRARY_PATHS})
 
                 if (${PREFIX}_${component_}_LIBRARY_DIR)
+                    set (${PREFIX}_LIBRARIES ${${PREFIX}_LIBRARIES} ${component_})
                     set (${PREFIX}_LIBRARY_DIRS ${${PREFIX}_LIBRARY_DIRS} ${${PREFIX}_${component_}_LIBRARY_DIR})
                 endif ()
             endforeach ()
         endforeach ()
     endif ()
 
-    list (REMOVE_DUPLICATES ${PREFIX}_LIBRARY_DIRS)
-    list (REMOVE_DUPLICATES ${PREFIX}_INCLUDE_DIRS)
-
     if (NOT found_ AND NOT ${PREFIX}_INCLUDE_DIRS AND NOT ${PREFIX}_LIBRARY_DIRS AND NOT ${PREFIX}_LIBRARIES)
         message (FATAL_ERROR "!! sagase: unable to configure " ${PREFIX}) 
     endif ()
     
+    list (REMOVE_DUPLICATES ${PREFIX}_INCLUDE_DIRS)
+    list (REMOVE_DUPLICATES ${PREFIX}_LIBRARY_DIRS)
+    list (REMOVE_DUPLICATES ${PREFIX}_LIBRARIES)
+
     message (STATUS "sagase: " ${PREFIX} " Configure Results.")
     message (STATUS "-- Include Directories: " ${${PREFIX}_INCLUDE_DIRS})
     message (STATUS "-- Libarary Directories: " ${${PREFIX}_LIBRARY_DIRS})
