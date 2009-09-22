@@ -38,11 +38,14 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
         message (FATAL_ERROR "sagase: Unable to detect OS type")
     endif ()
 
-    # add prefix paths
-    foreach (p ${path_prefixes})
+    # normalizes external paths to cmake-style
+    #foreach (prefix ${path_prefixes})
+    #    file (TO_CMAKE_PATH "${prefix}" p)
+    #    set (normal_path_prefixes ${normal_path_prefixes} ${p})
+    #endforeach ()
 
-        # normalizes external paths to cmake-style
-        file (TO_CMAKE_PATH "${p}" prefix)
+    # add prefix paths
+    foreach (prefix ${path_prefixes})
 
         set (includes ${includes} 
             ${prefix}/includes)
