@@ -8,7 +8,7 @@ include (Sagase)
 sagase_configure_package (OGRE 
     NAMES Ogre OgreSDK ogre OGRE
     COMPONENTS Ogre ogre OGRE OgreMain 
-    PREFIXES $ENV{NAALI_DEP_PATH} $ENV{OGRE_HOME})
+    PREFIXES "C:\\Ogre" $ENV{NAALI_DEP_PATH} $ENV{OGRE_HOME})
 
 #sagase_generate_paths (BOOST NAMES Boost boost BOOST PREFIXES "C:") 
 

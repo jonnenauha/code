@@ -39,7 +39,10 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
     endif ()
 
     # add prefix paths
-    foreach (prefix ${path_prefixes})
+    foreach (p ${path_prefixes})
+
+        # normalizes external paths to cmake-style
+        file (TO_CMAKE_PATH "${p}" prefix)
 
         set (includes ${includes} 
             ${prefix}/includes)
@@ -56,8 +59,8 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
         foreach (pkgname ${path_names})
 
             set (includes ${includes} 
-                ${prefix}/${pkgname}/includes 
-                ${prefix}/includes/${pkgname})
+                ${prefix}/${pkgname}/include 
+                ${prefix}/include/${pkgname})
 
             set (libraries ${libraries} 
                 ${prefix}/${pkgname}/lib ${prefix}/lib/${pkgname}
@@ -82,10 +85,17 @@ endfunction (sagase_generate_paths)
 # results are in ${PREFIX}_INCLUDE_DIRS, ${PREFIX}_LIBRARY_DIRS, 
 # ${PREFIX}_LIBRARIES, ${PREFIX}_DEFINITIONS, or fatal error.
 
-# Tryies the following methods to find a package
+# Tryies the following methods to find a package, in order of decreasing
+# specialization or detail:
 # 1. find_package
 # 2. OS-dependent (pkg-config, framework, etc.)
 # 3. find_path 
+
+# "NAMES" and "COMPONENTS" mean slightly different things depending on the
+# seach methond. For find_package, consult the cmake documentation. For
+# pkg-config, only the "NAMES" are used. For find_path/brute force, "NAMES"
+# are possible directory names, and "COMPONENTS" are the possible header or
+# library filenames.
 
 # example usages: 
 # sagase_configure_package (BOOST 
@@ -114,7 +124,11 @@ macro (sagase_configure_package PREFIX)
 
         string (TOUPPER ${name_} name_upper_)
 
-        # find_package can't handle packages in all caps (?!)
+        # find_package can't handle packages in all caps.
+        # cmake is a macro language, which means it defines global variables,
+        # which it tries to namespace by choosing all caps variable names,
+        # when searching for a package who's name is all caps, this appears to
+        # cause a name collision, and is thus bypassed.
         if (NOT name_ STREQUAL name_upper_)
             message (STATUS "trying find_package: " ${name_})
 
@@ -172,6 +186,7 @@ macro (sagase_configure_package PREFIX)
     if (NOT found_)
         message (STATUS "trying brute-force search ")
 
+        # generate a combination of possible search paths
         sagase_generate_paths (include_paths library_paths NAMES ${PKG_NAMES} PREFIXES ${PKG_PREFIXES})
 
         # follow platform library naming
@@ -185,7 +200,7 @@ macro (sagase_configure_package PREFIX)
             message (FATAL_ERROR "sagase: " ${PREFIX} ": Unable to detect OS type")
         endif ()
 
-        # try using "components" as file names (without prefix or extension)
+        # try using "COMPONENTS" as possible file names (without prefix or extension)
         foreach (component_ ${PKG_COMPONENTS})
             
             # get header path
