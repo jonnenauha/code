@@ -44,32 +44,22 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
     #    set (normal_path_prefixes ${normal_path_prefixes} ${p})
     #endforeach ()
 
-    # add prefix paths
-    foreach (prefix ${path_prefixes})
-
-        set (includes ${includes} 
-            ${prefix}/includes)
-
-        set (libraries ${libraries} 
-            ${prefix}/lib 
-            ${prefix}/bin 
-            ${prefix}/dll)
-
-    endforeach ()
+    set (path_names ${path_names} ".")
 
     # add prefix+name paths
     foreach (prefix ${path_prefixes})
         foreach (pkgname ${path_names})
+            foreach (subpkgname ${path_names})
 
-            set (includes ${includes} 
-                ${prefix}/${pkgname}/include 
-                ${prefix}/include/${pkgname})
+                set (includes ${includes} 
+                    ${prefix}/${pkgname}/include/${subpkgname})
 
-            set (libraries ${libraries} 
-                ${prefix}/${pkgname}/lib ${prefix}/lib/${pkgname}
-                ${prefix}/${pkgname}/bin ${prefix}/bin/${pkgname}
-                ${prefix}/${pkgname}/dll ${prefix}/dll/${pkgname})
+                set (libraries ${libraries} 
+                    ${prefix}/${pkgname}/lib/${subpkgname}
+                    ${prefix}/${pkgname}/bin/${subpkgname}
+                    ${prefix}/${pkgname}/dll/${subpkgname})
 
+            endforeach ()
         endforeach ()
     endforeach ()
 
@@ -192,6 +182,9 @@ macro (sagase_configure_package PREFIX)
         # generate a combination of possible search paths
         sagase_generate_paths (include_paths library_paths NAMES ${PKG_NAMES} PREFIXES ${PKG_PREFIXES})
 
+        # all C and C++ headers
+        set (HEADER_POSTFIXES ".h" ".hpp" ".hh" ".hxx")
+
         # follow platform library naming
         if (MSVC)
             set (LIB_PREFIX "")
@@ -207,15 +200,17 @@ macro (sagase_configure_package PREFIX)
         foreach (component_ ${PKG_COMPONENTS})
             
             # get header path
-            find_path (${PREFIX}_${component_}_INCLUDE_DIR ${component_}.h ${include_paths})
-            
-            if (${PREFIX}_${component_}_INCLUDE_DIR)
-                set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
-            endif ()
+            foreach (header_extension_ ${HEADER_POSTFIXES})
+                find_path (${PREFIX}_${component_}_INCLUDE_DIR ${component_}${header_extension_} ${include_paths})
+                
+                if (${PREFIX}_${component_}_INCLUDE_DIR)
+                    set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
+                endif ()
+            endforeach ()
 
             # get library path
-            foreach (extension_ ${LIB_POSTFIXES})
-                find_path (${PREFIX}_${component_}_LIBRARY_DIR ${LIB_PREFIX}${component_}${extension_} ${library_paths})
+            foreach (lib_extension_ ${LIB_POSTFIXES})
+                find_path (${PREFIX}_${component_}_LIBRARY_DIR ${LIB_PREFIX}${component_}${lib_extension_} ${library_paths})
 
                 if (${PREFIX}_${component_}_LIBRARY_DIR)
                     set (${PREFIX}_LIBRARIES ${${PREFIX}_LIBRARIES} ${component_})

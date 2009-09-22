@@ -5,10 +5,10 @@ cmake_minimum_required (VERSION 2.6)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ".")
 include (Sagase)
 
-sagase_configure_package (OGRE 
-    NAMES Ogre OgreSDK ogre OGRE
-    COMPONENTS Ogre ogre OGRE OgreMain 
-    PREFIXES $ENV{NAALI_DEP_PATH} $ENV{OGRE_HOME})
+sagase_configure_package (BOOST 
+    NAMES Boost boost BOOST
+    COMPONENTS filesystem
+    PREFIXES $ENV{NAALI_DEP_PATH})
 
 #sagase_generate_paths (BOOST NAMES Boost boost BOOST PREFIXES "C:") 
 
