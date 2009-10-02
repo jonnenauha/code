@@ -71,16 +71,19 @@ main (int argc, char** argv)
 {
     QApplication app (argc, argv);
     
-    TestWidget *win3d = new TestWidget (render_setup (100, 100));
-    win3d-> show ();
-
     QWidget *win1 = new QWidget;
     QVBoxLayout *layout = new QVBoxLayout (win1);
     QLabel *label = new QLabel ("main window");
 
+    TestWidget *win3d = new TestWidget (render_setup (100, 100), win1);
+    win3d-> show ();
+
     layout-> addWidget (label);
+    layout-> addWidget (win3d);
+
+    win1-> setMinimumSize (100, 100);
     win1-> setLayout (layout);
-    //win1-> show ();
+    win1-> show ();
 
     return app.exec ();
 }

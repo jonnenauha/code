@@ -19,7 +19,7 @@ class OgreWidget : public QWidget
             : QWidget (parent), root_ (root), win_ (NULL)
         {
             setAttribute(Qt::WA_PaintOnScreen);
-            setAttribute(Qt::WA_NoBackground);
+            setAttribute(Qt::WA_PaintOutsidePaintEvent);
             createRenderWindow ();
         }
 
@@ -57,21 +57,22 @@ class OgreWidget : public QWidget
             winhandle += ":";
             winhandle += Ogre::StringConverter::toString (static_cast<unsigned int> (info.screen()));
             winhandle += ":";
-            winhandle += Ogre::StringConverter::toString (static_cast<unsigned long> (winId()));
+            //winhandle += Ogre::StringConverter::toString (static_cast<unsigned long> (winId()));
+            winhandle += Ogre::StringConverter::toString (static_cast<unsigned long> (parentWidget()->winId()));
+
+            std::cout << "!!!!!!!!!!!! handle: " << winhandle << std::endl;
 
             Ogre::NameValuePairList params;
             params["parentWindowHandle"] = winhandle;
 
-            win_ = root_-> createRenderWindow 
-                ("View" + Ogre::StringConverter::toString 
-                    (reinterpret_cast <unsigned long> (this)),
-                    width(), height(), false, &params);
+            win_ = root_-> createRenderWindow ("View", width(), height(), false, &params);
 
             // take over ogre window
-            //WId ogreWinId = 0x0;
-            //win_-> getCustomAttribute ("WINDOW", &ogreWinId);
-            //assert (ogreWinId);
-            //create (ogreWinId);
+            // needed with parent windows
+            WId ogreWinId = 0x0;
+            win_-> getCustomAttribute ("WINDOW", &ogreWinId);
+            assert (ogreWinId);
+            create (ogreWinId);
         }
 
         void resizeRenderWindow ()
@@ -191,6 +192,8 @@ class TestWidget : public OgreWidget
             }
         }
         
+        QSize minSizeHint () const { return QSize (100, 100); }
+
         void paintEvent (QPaintEvent *e) { OgreWidget::Update (); }
 
         void resizeEvent(QResizeEvent *e)
