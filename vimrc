@@ -15,6 +15,7 @@ set smarttab                "somewhat smarter tab control
 set cindent                 "C indenting
 set number                  "print line numbers
 set incsearch               "incremental search
+set hlsearch                "highlight search matches
 "set ignorecase              "only for smartcase below
 set smartcase               "if no caps, case insensitive
 set ruler                   "show the cursor
@@ -79,3 +80,7 @@ nnoremap <C-S> :,$s/\<<C-R><C-W>\>/
 "no annoying bell
 set t_vb=
 
+" Switch on syntax highlighting if it wasn't on yet.
+if !exists("syntax_on")
+    syntax on
+endif
