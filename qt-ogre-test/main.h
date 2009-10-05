@@ -20,6 +20,7 @@ class OgreWidget : public QWidget
         {
             setAttribute(Qt::WA_PaintOnScreen);
             setAttribute(Qt::WA_PaintOutsidePaintEvent);
+            setAttribute(Qt::WA_OpaquePaintEvent);
             createRenderWindow ();
         }
 
@@ -69,10 +70,10 @@ class OgreWidget : public QWidget
 
             // take over ogre window
             // needed with parent windows
-            WId ogreWinId = 0x0;
-            win_-> getCustomAttribute ("WINDOW", &ogreWinId);
-            assert (ogreWinId);
-            create (ogreWinId);
+            WId ogre_winid = 0x0;
+            win_-> getCustomAttribute ("WINDOW", &ogre_winid);
+            assert (ogre_winid);
+            create (ogre_winid);
         }
 
         void resizeRenderWindow ()
@@ -127,14 +128,12 @@ class TestWidget : public OgreWidget
 
             // Alter the camera aspect ratio to match the viewport
             cam->setAspectRatio (Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
-
-            startTimer(20);
         }
+
+        void Update () { OgreWidget::Update (); }
 
     protected:
         
-        void timerEvent (QTimerEvent *e) { OgreWidget::Update (); }
-
         void mousePressEvent (QMouseEvent *e) 
         {
             mousepos = e-> pos();
@@ -187,14 +186,12 @@ class TestWidget : public OgreWidget
 
                 mousepos = curPos;
                 orientation = mainnode->getOrientation();
-
-                OgreWidget::Update();
             }
         }
         
         QSize minSizeHint () const { return QSize (100, 100); }
 
-        void paintEvent (QPaintEvent *e) { OgreWidget::Update (); }
+        void paintEvent (QPaintEvent *e) { Update (); }
 
         void resizeEvent(QResizeEvent *e)
         {
@@ -215,6 +212,37 @@ class TestWidget : public OgreWidget
         Ogre::SceneManager *sceneman;
         Ogre::Camera *cam;
         Ogre::Viewport *viewport;
+};
+
+class Scene : QObject
+{
+    Q_OBJECT
+
+    public:
+        Scene (TestWidget *w)
+        {
+            widget = new QLineEdit ("a widget");
+            world = w;
+
+            startTimer (20);
+        }
+
+        void Update ()
+        {
+            world-> Update ();
+            widget-> setText ("some text");
+            widget-> render (world, QPoint (50, 50));//, QRegion (0, 0, widget.width(), widget.height()), QWidget::DrawChildren);
+            //QPainter p (this);
+            //p.setPen (QColor ("red"));
+            //p.drawText (10, 10, "What The Fuck?");
+        }
+
+    protected:
+
+        void timerEvent (QTimerEvent *e) { Update (); }
+
+        QLineEdit *widget;
+        TestWidget *world;
 };
 
 #endif //_MAIN_H_
