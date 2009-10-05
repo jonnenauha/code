@@ -75,23 +75,22 @@ main (int argc, char** argv)
     QVBoxLayout *layout = new QVBoxLayout (win1);
     
     TestWidget *win3d = new TestWidget (render_setup (100, 100), win1);
-    //Scene *scene = new Scene (win3d);
-    layout-> addWidget (win3d);
+    //Scene *s = new Scene (win3d);
 
     //QLineEdit *line = new QLineEdit ();
     //layout-> addWidget (line);
+    layout-> addWidget (win3d);
 
     win1-> setMinimumSize (100, 100);
     win1-> setLayout (layout);
-    win1-> show ();
+    //win1-> show ();
 
     QGraphicsScene scene;
     QGraphicsView view (&scene);
 
-    scene.addWidget (new QDialog ());
-    scene.addWidget (new QLineEdit ());
+    scene.addWidget (win1);
 
-    //view.show();
+    view.show();
 
     return app.exec ();
 }
