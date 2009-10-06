@@ -65,32 +65,59 @@ Ogre::Root *render_setup (int width, int height)
 }
 
 //=============================================================================
+//
+SceneManager::SceneManager (Ogre::Root *scene_root)
+{
+    mainwin = new QWidget;
+    mainlay = new QVBoxLayout;
+
+    worldscene = new TestWidget (scene_root, mainwin);
+
+    mainpainter = new QPainter (worldscene);
+
+    uiscene = new QGraphicsScene;
+    uiview = new RedirectedQGraphicsView (mainpainter, uiscene);
+
+    line = new QLineEdit;
+    line-> setText ("wtf");
+
+    mainlay-> addWidget (worldscene);
+    mainwin-> setLayout (mainlay);
+    mainwin-> setMinimumSize (100, 100);
+
+    uiscene-> addWidget (line);
+
+    worldscene-> installEventFilter (this);
+    uiscene-> installEventFilter (this);
+    uiview-> installEventFilter (this);
+
+    uiview-> show();
+
+    startTimer (20);
+}
+
+bool SceneManager::eventFilter (QObject *o, QEvent *e)
+{
+    // paint manually in the timer to avoid flicker
+    if (e-> type() == QEvent::Paint)
+        return true;
+
+    // forward to uiview
+    if (o == worldscene)// && e-> spontaneous())
+        QApplication::sendEvent (uiview, e);
+    
+    return false;
+}
+
+//=============================================================================
 // Main entry point
 int
 main (int argc, char** argv)
 {
     QApplication app (argc, argv);
     
-    QWidget *win1 = new QWidget;
-    QVBoxLayout *layout = new QVBoxLayout (win1);
-    
-    TestWidget *win3d = new TestWidget (render_setup (100, 100), win1);
-    //Scene *s = new Scene (win3d);
-
-    //QLineEdit *line = new QLineEdit ();
-    //layout-> addWidget (line);
-    layout-> addWidget (win3d);
-
-    win1-> setMinimumSize (100, 100);
-    win1-> setLayout (layout);
-    //win1-> show ();
-
-    QGraphicsScene scene;
-    QGraphicsView view (&scene);
-
-    scene.addWidget (win1);
-
-    view.show();
+    SceneManager scene (render_setup (100, 100));
+    scene.Start ();
 
     return app.exec ();
 }

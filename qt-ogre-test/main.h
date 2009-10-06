@@ -10,6 +10,9 @@
 #include <QX11Info>
 #include <OGRE/Ogre.h>
 
+using std::cout;
+using std::endl;
+
 class OgreWidget : public QWidget
 {
     Q_OBJECT
@@ -18,9 +21,9 @@ class OgreWidget : public QWidget
         OgreWidget (Ogre::Root *root, QWidget *parent = 0)
             : QWidget (parent), root_ (root), win_ (NULL)
         {
-            setAttribute(Qt::WA_PaintOnScreen);
-            setAttribute(Qt::WA_PaintOutsidePaintEvent);
-            setAttribute(Qt::WA_OpaquePaintEvent);
+            setAttribute (Qt::WA_PaintOnScreen);
+            setAttribute (Qt::WA_PaintOutsidePaintEvent);
+            setAttribute (Qt::WA_NoSystemBackground);
             createRenderWindow ();
         }
 
@@ -54,14 +57,20 @@ class OgreWidget : public QWidget
             QX11Info info = x11Info();
             Ogre::String winhandle;
 
-            winhandle  = Ogre::StringConverter::toString (reinterpret_cast<unsigned long> (info.display()));
+            winhandle = Ogre::StringConverter::toString 
+                (reinterpret_cast<unsigned long> 
+                 (info.display()));
             winhandle += ":";
-            winhandle += Ogre::StringConverter::toString (static_cast<unsigned int> (info.screen()));
-            winhandle += ":";
-            //winhandle += Ogre::StringConverter::toString (static_cast<unsigned long> (winId()));
-            winhandle += Ogre::StringConverter::toString (static_cast<unsigned long> (parentWidget()->winId()));
 
-            std::cout << "!!!!!!!!!!!! handle: " << winhandle << std::endl;
+            winhandle += Ogre::StringConverter::toString 
+                (static_cast<unsigned int> 
+                 (info.screen()));
+            winhandle += ":";
+
+            winhandle += Ogre::StringConverter::toString 
+                (static_cast<unsigned long> 
+                 (parentWidget()? 
+                  parentWidget()->winId() : winId()));
 
             Ogre::NameValuePairList params;
             params["parentWindowHandle"] = winhandle;
@@ -70,10 +79,13 @@ class OgreWidget : public QWidget
 
             // take over ogre window
             // needed with parent windows
-            WId ogre_winid = 0x0;
-            win_-> getCustomAttribute ("WINDOW", &ogre_winid);
-            assert (ogre_winid);
-            create (ogre_winid);
+            if (parentWidget())
+            {
+                WId ogre_winid = 0x0;
+                win_-> getCustomAttribute ("WINDOW", &ogre_winid);
+                assert (ogre_winid);
+                create (ogre_winid);
+            }
         }
 
         void resizeRenderWindow ()
@@ -214,35 +226,64 @@ class TestWidget : public OgreWidget
         Ogre::Viewport *viewport;
 };
 
-class Scene : QObject
+class RedirectedQGraphicsView : public QGraphicsView
+{
+    public:
+        RedirectedQGraphicsView (QPainter *r, QGraphicsScene *s, QWidget *p = 0)
+            : QGraphicsView (s, p), redirpainter_ (r) {}
+
+        void Update () { render (redirpainter_, dst_, viewport()-> rect()); }
+    
+    protected:
+        bool event (QEvent *e)
+        {
+            cout << "uiview event() : " << e-> type() << endl;
+            QGraphicsView::event (e);
+        }
+
+        void resizeEvent (QResizeEvent *e) 
+        { 
+            const QSize &s (e-> size());
+            dst_ = QRect (0, 0, s.width (), s.height ());
+        }
+
+    private:
+        QRect       dst_; 
+        QPainter    *redirpainter_;
+};
+
+class SceneManager : public QObject
 {
     Q_OBJECT
 
     public:
-        Scene (TestWidget *w)
-        {
-            widget = new QLineEdit ("a widget");
-            world = w;
+        SceneManager (Ogre::Root *scene_root);
 
-            startTimer (20);
-        }
+        void Start () { mainwin-> show(); }
 
         void Update ()
         {
-            world-> Update ();
-            widget-> setText ("some text");
-            widget-> render (world, QPoint (50, 50));//, QRegion (0, 0, widget.width(), widget.height()), QWidget::DrawChildren);
-            //QPainter p (this);
-            //p.setPen (QColor ("red"));
-            //p.drawText (10, 10, "What The Fuck?");
+            worldscene-> Update ();
+            uiview-> Update ();
         }
 
     protected:
 
         void timerEvent (QTimerEvent *e) { Update (); }
 
-        QLineEdit *widget;
-        TestWidget *world;
+        bool eventFilter (QObject *o, QEvent *e);
+
+        QWidget         *mainwin;
+        QVBoxLayout     *mainlay;
+
+        QPainter        *mainpainter;
+
+        QLineEdit       *line;
+
+        QGraphicsScene          *uiscene;
+        RedirectedQGraphicsView *uiview;
+        
+        OgreWidget      *worldscene;
 };
 
 #endif //_MAIN_H_
