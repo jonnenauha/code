@@ -166,9 +166,10 @@ class SceneManager : public QObject
                 return true;
 
             // forward to uiview
-            if (o == worldscene)// && e-> spontaneous())
+            if (o == worldscene)
             {
                 cout << "forwarded: " << e-> type();
+                if (e-> spontaneous()) cout << " (spontaneous) ";
                 bool result = QApplication::sendEvent (uiview, e);
                 if (!result) cout << " not"; cout << " accepted" << endl;
             }
