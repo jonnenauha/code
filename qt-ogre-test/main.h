@@ -85,14 +85,14 @@ class RedirectedQGraphicsView : public QGraphicsView
         void Realize ()
         {
             show ();
-            //hide ();
+            //setAttribute (Qt::WA_DontShowOnScreen); // seems to work as hide()
         }
 
     protected:
         bool event (QEvent *e)
         {
-            cout << "uiview event : " << e-> type() << endl;
-            QGraphicsView::event (e);
+            cout << " uiview event : " << e-> type() << endl;
+            return QGraphicsView::event (e);
         }
 
         void mouseMoveEvent (QMouseEvent *e)
@@ -144,7 +144,7 @@ class SceneManager : public QObject
 
             uiview-> Realize ();
 
-            startTimer (20);
+            startTimer (33);
         }
 
         void Start () { mainwin-> show(); }
@@ -168,8 +168,9 @@ class SceneManager : public QObject
             // forward to uiview
             if (o == worldscene)// && e-> spontaneous())
             {
-                cout << "forwarded: " << e-> type() << endl;
-                QApplication::sendEvent (uiview, e);
+                cout << "forwarded: " << e-> type();
+                bool result = QApplication::sendEvent (uiview, e);
+                if (!result) cout << " not"; cout << " accepted" << endl;
             }
 
             return false;
