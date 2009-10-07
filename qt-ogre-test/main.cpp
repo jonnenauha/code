@@ -91,7 +91,7 @@ SceneManager::SceneManager (Ogre::Root *scene_root)
     uiscene-> installEventFilter (this);
     uiview-> installEventFilter (this);
 
-    uiview-> show();
+    uiview-> Realize ();
 
     startTimer (20);
 }
@@ -104,7 +104,10 @@ bool SceneManager::eventFilter (QObject *o, QEvent *e)
 
     // forward to uiview
     if (o == worldscene)// && e-> spontaneous())
+    {
+        cout << "forwarded: " << e-> type() << endl;
         QApplication::sendEvent (uiview, e);
+    }
     
     return false;
 }

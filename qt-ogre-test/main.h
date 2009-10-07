@@ -7,7 +7,11 @@
 #define _MAIN_H_
 
 #include <QtGui>
+
+#ifndef Q_WS_WIN
 #include <QX11Info>
+#endif
+
 #include <OGRE/Ogre.h>
 
 using std::cout;
@@ -54,6 +58,9 @@ class OgreWidget : public QWidget
         {
             if (win_) return;
 
+            Ogre::NameValuePairList params;
+
+#ifndef Q_WS_WIN
             QX11Info info = x11Info();
             Ogre::String winhandle;
 
@@ -72,8 +79,12 @@ class OgreWidget : public QWidget
                  (parentWidget()? 
                   parentWidget()->winId() : winId()));
 
-            Ogre::NameValuePairList params;
             params["parentWindowHandle"] = winhandle;
+#else
+            params["externalWindowHandle"] = 
+                Ogre::StringConverter::toString
+                ((size_t)(HWND) winId());
+#endif
 
             win_ = root_-> createRenderWindow ("View", width(), height(), false, &params);
 
@@ -234,11 +245,23 @@ class RedirectedQGraphicsView : public QGraphicsView
 
         void Update () { render (redirpainter_, dst_, viewport()-> rect()); }
     
+        void Realize ()
+        {
+            show ();
+            //hide ();
+        }
+
     protected:
         bool event (QEvent *e)
         {
-            cout << "uiview event() : " << e-> type() << endl;
+            cout << "uiview event : " << e-> type() << endl;
             QGraphicsView::event (e);
+        }
+
+        void mouseMoveEvent (QMouseEvent *e)
+        {
+            cout << "uiview mouseMoveEvent : " << e-> type() << endl;
+            QGraphicsView::mouseMoveEvent (e);
         }
 
         void resizeEvent (QResizeEvent *e) 
