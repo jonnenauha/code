@@ -115,11 +115,15 @@ void OgreWidget::createRenderWindow ()
 #else
     params["externalWindowHandle"] = 
         Ogre::StringConverter::toString
-        ((size_t)(HWND) winId());
+        ((size_t)(HWND) 
+         (parentWidget()? 
+          parentWidget()->winId() : winId()));
 #endif
 
     win_ = root_-> createRenderWindow ("View", width(), height(), false, &params);
 
+
+#ifndef Q_WS_WIN
     // take over ogre window
     // needed with parent windows
     if (parentWidget())
@@ -129,6 +133,7 @@ void OgreWidget::createRenderWindow ()
         assert (ogre_winid);
         create (ogre_winid);
     }
+#endif
 }
 
 void OgreWidget::resizeRenderWindow ()
