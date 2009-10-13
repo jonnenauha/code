@@ -7,7 +7,7 @@
 #include "ogrewidget.h"
 
 //=============================================================================
-//
+
 OgreWidget::OgreWidget (Ogre::Root *root, QWidget *parent) : 
     QWidget (parent), 
     root_ (root), 
@@ -31,10 +31,10 @@ void OgreWidget::draw_to_render_window ()
 {
     if (win_) 
     {
-        root_-> _fireFrameStarted ();
-        win_-> update ();
+        root_-> _fireFrameStarted();
+        win_-> update();
         root_-> _fireFrameRenderingQueued ();
-        root_-> _fireFrameEnded ();
+        root_-> _fireFrameEnded();
     }
 }
 
@@ -44,6 +44,8 @@ void OgreWidget::create_render_window ()
 
     bool stealparent (parentWidget() != NULL);
     QWidget *nativewin ((stealparent)? parentWidget () : this);
+
+    if (stealparent) cout << "steal!!!!!!!!!" << endl;
 
     Ogre::NameValuePairList params;
     Ogre::String winhandle;
@@ -76,10 +78,10 @@ void OgreWidget::create_render_window ()
     
     winhandle += Ogre::StringConverter::toString 
         ((unsigned long)
-         (winId ()));
+         nativewin-> winId());
          //(isHidden ()) ? 
-         //nativewin-> winId () : 
-         //nativewin-> effectiveWinId ());
+         //nativewin-> effectiveWinId () : 
+         //nativewin-> winId ());
 
     //Add the external window handle parameters to the existing params set.
     params["parentWindowHandle"] = winhandle;
@@ -89,17 +91,17 @@ void OgreWidget::create_render_window ()
 
     // take over ogre window
     // needed with parent windows
-//    if (stealparent)
-//    {
-//        WId ogre_winid = 0x0;
-//#ifndef Q_WS_WIN
-//        win_-> getCustomAttribute ("WINDOW", &ogre_winid);
-//#else
-//        win_-> getCustomAttribute ("HWND", &ogre_winid);
-//#endif
-//        assert (ogre_winid);
-//        create (ogre_winid);
-//    }
+    if (stealparent)
+    {
+        WId ogre_winid = 0x0;
+#ifndef Q_WS_WIN
+        win_-> getCustomAttribute ("WINDOW", &ogre_winid);
+#else
+        win_-> getCustomAttribute ("HWND", &ogre_winid);
+#endif
+        assert (ogre_winid);
+        create (ogre_winid);
+    }
 }
 
 void OgreWidget::resize_render_window ()
@@ -110,3 +112,4 @@ void OgreWidget::resize_render_window ()
         win_-> windowMovedOrResized ();
     }
 }
+

@@ -69,8 +69,19 @@ main (int argc, char** argv)
 {
     QApplication app (argc, argv);
     
-    TestWidget *widget = new TestWidget (render_setup (800, 600));
+    //QWidget *mainwin = new QWidget;
+    //QVBoxLayout *mainlay = new QVBoxLayout;
+
+    const int width (800), height (800);
+
+    TestWidget *widget = new TestWidget (render_setup (width, height));
+
+    //mainlay-> addWidget (widget);
+    //mainwin-> setLayout (mainlay);
+    //mainwin-> setMinimumSize (width, height);
+
     widget-> show();
+    //mainwin-> show();
 
     return app.exec ();
 }

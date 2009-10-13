@@ -9,7 +9,7 @@
 
 //=============================================================================
 
-TestWidget::TestWidget (Ogre::Root *root, QWidget *parent) : 
+TestWidget::TestWidget (Ogre::Root *root, QWidget *parent) :
     OgreWidget (root, parent)
 {
     sceneman = root_->createSceneManager (Ogre::ST_GENERIC);
@@ -44,10 +44,8 @@ TestWidget::TestWidget (Ogre::Root *root, QWidget *parent) :
 
     // Alter the camera aspect ratio to match the viewport
     cam->setAspectRatio (Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
-
-    startTimer (20);
 }
-        
+
 void TestWidget::mousePressEvent (QMouseEvent *e) 
 {
     mousepos = e-> pos();

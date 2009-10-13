@@ -23,6 +23,10 @@ class OgreWidget : public QWidget
         void paintEvent (QPaintEvent *e) { draw_to_render_window (); }
         void resizeEvent (QResizeEvent *e) { resize_render_window (); }
 
+        void draw_to_render_window ();
+        void create_render_window ();
+        void resize_render_window ();
+
 		//void closeEvent (QCloseEvent *event) { std::cout << "closeEvent" << std::endl; }
 		//void keyPressEvent (QKeyEvent* event) { std::cout << "keyPressEvent" << std::endl; }
 		//void keyReleaseEvent (QKeyEvent* event) { std::cout << "keyReleaseEvent" << std::endl; }
@@ -32,15 +36,11 @@ class OgreWidget : public QWidget
 		//void mouseMoveEvent (QMouseEvent* event) { std::cout << "mouseMoveEvent" << std::endl; }
 		//void wheelEvent (QWheelEvent* event) { std::cout << "wheelEvent" << std::endl; }
 
-        void draw_to_render_window ();
-        void create_render_window ();
-        void resize_render_window ();
-
     protected:
 
+        // implementation variables
         Ogre::RenderWindow  *win_;
         Ogre::Root          *root_;
-
     private:
         OgreWidget (const OgreWidget&);
         void operator= (const OgreWidget&);
