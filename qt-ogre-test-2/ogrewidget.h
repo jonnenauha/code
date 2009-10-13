@@ -41,6 +41,7 @@ class OgreWidget : public QWidget
         // implementation variables
         Ogre::RenderWindow  *win_;
         Ogre::Root          *root_;
+    
     private:
         OgreWidget (const OgreWidget&);
         void operator= (const OgreWidget&);

@@ -23,6 +23,8 @@ class TestWidget : public OgreWidget
         
         void resizeEvent (QResizeEvent *e);
 
+        void timerEvent (QTimerEvent *e) { draw_to_render_window (); }
+
     protected:
 
         bool mousepressed;
@@ -35,6 +37,5 @@ class TestWidget : public OgreWidget
         Ogre::Viewport *viewport;
 };
 
-//        void timerEvent (QTimerEvent *e) { draw_to_render_window (); }
 
 #endif //_TESTWIDGET_H_

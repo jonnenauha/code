@@ -69,18 +69,18 @@ main (int argc, char** argv)
 {
     QApplication app (argc, argv);
     
-    //QWidget *mainwin = new QWidget;
-    //QVBoxLayout *mainlay = new QVBoxLayout;
-
     const int width (800), height (800);
 
-    TestWidget *widget = new TestWidget (render_setup (width, height));
-
-    //mainlay-> addWidget (widget);
+    //QWidget *mainwin = new QWidget;
+    //QVBoxLayout *mainlay = new QVBoxLayout; // layout generates QResizeEvents
     //mainwin-> setLayout (mainlay);
-    //mainwin-> setMinimumSize (width, height);
+    //mainwin-> setMinimumSize (width, height); // crash if zero
+
+    TestWidget *widget = new TestWidget (render_setup (width, height));//, mainwin);
 
     widget-> show();
+
+    //mainlay-> addWidget (widget);
     //mainwin-> show();
 
     return app.exec ();
