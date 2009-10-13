@@ -162,11 +162,11 @@ class SceneManager : public QObject
 
         bool eventFilter (QObject *o, QEvent *e)
         {
-             paint manually in the timer to avoid flicker
+            // paint manually in the timer to avoid flicker
             if (e-> type() == QEvent::Paint)
                 return true;
 
-             forward to uiview from worldscene
+            // forward to uiview from worldscene
             if (o == worldscene)
             {
                 cout << "forwarded: " << e-> type();
