@@ -128,7 +128,11 @@ void OgreWidget::createRenderWindow ()
     if (parentWidget())
     {
         WId ogre_winid = 0x0;
+#ifndef Q_WS_WIN
         win_-> getCustomAttribute ("WINDOW", &ogre_winid);
+#else
+        win_-> getCustomAttribute ("HWND", &ogre_winid);
+#endif
         assert (ogre_winid);
         create (ogre_winid);
     }

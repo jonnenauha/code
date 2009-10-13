@@ -91,13 +91,13 @@ class RedirectedQGraphicsView : public QGraphicsView
     protected:
         bool event (QEvent *e)
         {
-            cout << " uiview event : " << e-> type() << endl;
+            //cout << " uiview event : " << e-> type() << endl;
             return QGraphicsView::event (e);
         }
 
         void mouseMoveEvent (QMouseEvent *e)
         {
-            cout << "uiview mouseMoveEvent : " << e-> type() << endl;
+            //cout << "uiview mouseMoveEvent : " << e-> type() << endl;
             QGraphicsView::mouseMoveEvent (e);
         }
 
@@ -138,10 +138,11 @@ class SceneManager : public QObject
 
             uiscene-> addWidget (line);
 
+            //mainwin-> installEventFilter (this);
             worldscene-> installEventFilter (this);
             uiscene-> installEventFilter (this);
             uiview-> installEventFilter (this);
-
+            
             uiview-> Realize ();
 
             startTimer (33);
@@ -161,17 +162,21 @@ class SceneManager : public QObject
 
         bool eventFilter (QObject *o, QEvent *e)
         {
-            // paint manually in the timer to avoid flicker
+             paint manually in the timer to avoid flicker
             if (e-> type() == QEvent::Paint)
                 return true;
 
-            // forward to uiview
+             forward to uiview from worldscene
             if (o == worldscene)
             {
                 cout << "forwarded: " << e-> type();
-                if (e-> spontaneous()) cout << " (spontaneous) ";
-                bool result = QApplication::sendEvent (uiview, e);
-                if (!result) cout << " not"; cout << " accepted" << endl;
+                if (e-> spontaneous())
+                    cout << " (spontaneous)";
+                {
+                    bool res = QApplication::sendEvent (uiscene, e);//uiview, e);
+                    if (res) cout << " accepted" << endl;
+                    else cout << " rejected" << endl;
+                }
             }
 
             return false;
