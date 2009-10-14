@@ -26,9 +26,11 @@ add_definitions (-DQT_NO_KEYWORDS)          # Adds -D define flags to the compil
 
 qt4_generate_moc (ogrewidget.h ogrewidget_moc.cpp)
 qt4_generate_moc (testwidget.h testwidget_moc.cpp)
+qt4_generate_moc (viewmodel.h viewmodel_moc.cpp)
 
 add_executable (ogre-test main.cpp 
     testwidget.cpp testwidget_moc.cpp
-    ogrewidget.cpp ogrewidget_moc.cpp)
+    ogrewidget.cpp ogrewidget_moc.cpp
+    viewmodel.cpp viewmodel_moc.cpp)
     
 target_link_libraries (ogre-test OgreMain ${QT_LIBRARIES})

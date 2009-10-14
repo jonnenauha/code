@@ -10,6 +10,7 @@
 #include <OGRE/Ogre.h>
 
 #include <iostream>
+#include <cstring>
 
 using namespace std;
 

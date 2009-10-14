@@ -4,8 +4,10 @@
  */
 
 #include "main.h"
+#include "point3d.h"
 #include "ogrewidget.h"
 #include "testwidget.h"
+#include "viewmodel.h"
 
 //=============================================================================
 
@@ -70,18 +72,38 @@ main (int argc, char** argv)
     QApplication app (argc, argv);
     
     const int width (800), height (800);
+    Ogre::Root *ogre_scene_graph (render_setup (width, height)); 
 
-    //QWidget *mainwin = new QWidget;
-    //QVBoxLayout *mainlay = new QVBoxLayout; // layout generates QResizeEvents
-    //mainwin-> setLayout (mainlay);
-    //mainwin-> setMinimumSize (width, height); // crash if zero
+    if ((argc > 1) && (!strcmp (argv[1], "graphicsscene")))
+    {
+        TestWidget *widget = new TestWidget (ogre_scene_graph);
 
-    TestWidget *widget = new TestWidget (render_setup (width, height));//, mainwin);
+        GraphicsScene *scene = new GraphicsScene (widget);
+        GraphicsView *view = new GraphicsView (scene);
 
-    widget-> show();
+        view-> setViewport (widget);
+        view-> setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
 
-    //mainlay-> addWidget (widget);
-    //mainwin-> show();
+        view-> show();
+    }
+    else if ((argc > 1) && (!strcmp (argv[1], "layout")))
+    {
+        QWidget *mainwin = new QWidget;
+        QVBoxLayout *mainlay = new QVBoxLayout; // layout generates QResizeEvents
+        
+        TestWidget *widget = new TestWidget (ogre_scene_graph, mainwin);
+
+        mainlay-> addWidget (widget);
+        mainwin-> setLayout (mainlay);
+        mainwin-> setMinimumSize (width, height); // crash if zero
+
+        mainwin-> show();
+    }
+    else
+    {
+        TestWidget *widget = new TestWidget (ogre_scene_graph);
+        widget-> show();
+    }
 
     return app.exec ();
 }

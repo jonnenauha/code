@@ -45,8 +45,6 @@ void OgreWidget::create_render_window ()
     bool stealparent (parentWidget() != NULL);
     QWidget *nativewin ((stealparent)? parentWidget () : this);
 
-    if (stealparent) cout << "steal!!!!!!!!!" << endl;
-
     Ogre::NameValuePairList params;
     Ogre::String winhandle;
 
