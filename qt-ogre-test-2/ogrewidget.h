@@ -20,7 +20,7 @@ class OgreWidget : public QWidget
         OgreWidget (Ogre::Root *root, QWidget *parent = 0);
         virtual ~OgreWidget ();
 
-        void paintEvent (QPaintEvent *e) { draw_to_render_window (); }
+        //void paintEvent (QPaintEvent *e) { draw_to_render_window (); }
         void resizeEvent (QResizeEvent *e) { resize_render_window (); }
 
         void draw_to_render_window ();

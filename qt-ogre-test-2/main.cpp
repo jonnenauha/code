@@ -76,15 +76,26 @@ main (int argc, char** argv)
 
     if ((argc > 1) && (!strcmp (argv[1], "graphicsscene")))
     {
-        TestWidget *widget = new TestWidget (ogre_scene_graph);
+        GraphicsView *view = new GraphicsView ();
+
+        QWidget *mainwin = new QWidget;
+        QVBoxLayout *mainlay = new QVBoxLayout; // layout generates QResizeEvents
+        QLineEdit *line = new QLineEdit;
+        
+        TestWidget *widget = new TestWidget (ogre_scene_graph, view);
 
         GraphicsScene *scene = new GraphicsScene (widget);
-        GraphicsView *view = new GraphicsView (scene);
-
+        scene-> addWidget (line);
+        
+        view-> setScene (scene);
         view-> setViewport (widget);
         view-> setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
 
-        view-> show();
+        mainlay-> addWidget (view);
+        mainwin-> setLayout (mainlay);
+        mainwin-> setMinimumSize (width, height); // crash if zero
+        
+        mainwin-> show();
     }
     else if ((argc > 1) && (!strcmp (argv[1], "layout")))
     {

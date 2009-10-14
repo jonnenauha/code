@@ -23,7 +23,7 @@ class TestWidget : public OgreWidget
         
         void resizeEvent (QResizeEvent *e);
 
-        void timerEvent (QTimerEvent *e) { draw_to_render_window (); }
+        //void timerEvent (QTimerEvent *e) { draw_to_render_window (); }
 
     protected:
 
