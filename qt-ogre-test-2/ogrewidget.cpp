@@ -29,8 +29,6 @@ OgreWidget::~OgreWidget ()
 
 void OgreWidget::draw_to_render_window ()
 {
-    cout << "draw_to_render_window" << endl;
-
     if (win_) 
     {
         root_-> _fireFrameStarted();
