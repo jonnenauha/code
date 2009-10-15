@@ -17,14 +17,17 @@ class TestWidget : public OgreWidget
 
         TestWidget (Ogre::Root *root, QWidget *parent = 0);
 
+        // draw on timer, not natural paint events
+        //void timerEvent (QTimerEvent *e) { draw_to_render_window (); }
+
+        void resizeEvent (QResizeEvent *e);
+
         void mousePressEvent (QMouseEvent *e);
         void mouseReleaseEvent (QMouseEvent *e);
         void mouseMoveEvent (QMouseEvent *e);
+
+        bool eventFilter (QObject *dst, QEvent *evt);
         
-        void resizeEvent (QResizeEvent *e);
-
-        //void timerEvent (QTimerEvent *e) { draw_to_render_window (); }
-
     protected:
 
         bool mousepressed;

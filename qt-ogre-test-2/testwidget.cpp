@@ -109,6 +109,8 @@ void TestWidget::mouseMoveEvent (QMouseEvent *e)
 
 void TestWidget::resizeEvent (QResizeEvent *e)
 {
+    std::cout << "TestWidget::resizeEvent" << std::endl;
+
     OgreWidget::resizeEvent (e);
 
     if (win_) 
@@ -116,4 +118,14 @@ void TestWidget::resizeEvent (QResizeEvent *e)
         cam-> setAspectRatio (Ogre::Real(width()) / Ogre::Real(height()));
         viewport-> update();
     }
+}
+
+bool TestWidget::eventFilter (QObject *dst, QEvent *evt)
+{
+    // watch for resizes
+    if (evt-> type() == QEvent::Resize)
+        resizeEvent (static_cast <QResizeEvent *> (evt));
+    
+    // don't steal the event
+    return false;
 }

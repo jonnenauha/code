@@ -20,13 +20,12 @@ class OgreWidget : public QWidget
         OgreWidget (Ogre::Root *root, QWidget *parent = 0);
         virtual ~OgreWidget ();
 
-        //void paintEvent (QPaintEvent *e) { draw_to_render_window (); }
-        void resizeEvent (QResizeEvent *e) { resize_render_window (); }
-
         void draw_to_render_window ();
         void create_render_window ();
         void resize_render_window ();
 
+        void paintEvent (QPaintEvent *e) { std::cout << "paintEvent" << std::endl; draw_to_render_window (); }
+        void resizeEvent (QResizeEvent *e) { std::cout << "resizeEvent" << std::endl; resize_render_window (); }
 		void closeEvent (QCloseEvent *event) { std::cout << "closeEvent" << std::endl; }
 		void keyPressEvent (QKeyEvent* event) { std::cout << "keyPressEvent" << std::endl; }
 		void keyReleaseEvent (QKeyEvent* event) { std::cout << "keyReleaseEvent" << std::endl; }
