@@ -78,27 +78,28 @@ main (int argc, char** argv)
     {
         GraphicsView *view = new GraphicsView ();
 
-        //QWidget *mainwin = new QWidget;
-        //QVBoxLayout *mainlay = new QVBoxLayout; // layout generates QResizeEvents
-        QLineEdit *line = new QLineEdit;
-        
-        TestWidget *widget = new TestWidget (ogre_scene_graph, view);
+        QDialog *dialog = new QDialog (0, Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
-        GraphicsScene *scene = new GraphicsScene (widget);
-        scene-> addWidget (line);
+        dialog-> setWindowOpacity (0.8);
+        dialog-> setWindowTitle ("testing baby");
+        dialog-> setLayout (new QVBoxLayout);
+        dialog-> layout()-> addWidget (new QLineEdit);
+        
+        TestWidget *scenewidget = new TestWidget (ogre_scene_graph, view);
+
+        GraphicsScene *scene = new GraphicsScene (scenewidget);
+        scene-> addWidget (dialog);
         
         view-> setScene (scene);
-        view-> setViewport (widget);
-        view-> installEventFilter (widget);
+        view-> setViewport (scenewidget);
+        view-> installEventFilter (scenewidget);
         view-> setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
 
-        //mainlay-> addWidget (view);
-
-        //mainwin-> setLayout (mainlay);
-        //mainwin-> setMinimumSize (width, height); // crash if zero
+        QGraphicsItem *item (view-> items().front());
+        item-> setFlag (QGraphicsItem::ItemIsMovable);
+        item-> setCacheMode (QGraphicsItem::DeviceCoordinateCache);
+        item-> setPos (10, 50);
         
-        //mainwin-> show();
-
         view-> show();
     }
     else if ((argc > 1) && (!strcmp (argv[1], "layout")))
@@ -106,9 +107,9 @@ main (int argc, char** argv)
         QWidget *mainwin = new QWidget;
         QVBoxLayout *mainlay = new QVBoxLayout; // layout generates QResizeEvents
         
-        TestWidget *widget = new TestWidget (ogre_scene_graph, mainwin);
+        TestWidget *scenewidget = new TestWidget (ogre_scene_graph, mainwin);
 
-        mainlay-> addWidget (widget);
+        mainlay-> addWidget (scenewidget);
         mainwin-> setLayout (mainlay);
         mainwin-> setMinimumSize (width, height); // crash if zero
 
@@ -116,8 +117,8 @@ main (int argc, char** argv)
     }
     else
     {
-        TestWidget *widget = new TestWidget (ogre_scene_graph);
-        widget-> show();
+        TestWidget *scenewidget = new TestWidget (ogre_scene_graph);
+        scenewidget-> show();
     }
 
     return app.exec ();
