@@ -5,7 +5,6 @@
 
 #include "main.h"
 #include "viewmodel.h"
-#include "point3d.h"
 
 void GraphicsScene::drawBackground (QPainter *painter, const QRectF &rect)
 {

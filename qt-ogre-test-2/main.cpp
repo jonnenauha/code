@@ -4,7 +4,6 @@
  */
 
 #include "main.h"
-#include "point3d.h"
 #include "ogrewidget.h"
 #include "testwidget.h"
 #include "viewmodel.h"

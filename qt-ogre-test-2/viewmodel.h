@@ -8,7 +8,6 @@
 
 #include "main.h"
 #include "testwidget.h"
-#include "point3d.h"
 
 class GraphicsView : public QGraphicsView
 {
