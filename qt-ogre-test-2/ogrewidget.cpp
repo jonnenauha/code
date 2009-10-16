@@ -54,7 +54,7 @@ void OgreWidget::create_render_window ()
     // positive integer for W32 (HWND handle)
     winhandle = Ogre::StringConverter::toString 
         ((unsigned int) 
-         (native-> winId ()));
+         (nativewin-> winId ()));
 
     //Add the external window handle parameters to the existing params set.
     params["externalWindowHandle"] = winhandle;
