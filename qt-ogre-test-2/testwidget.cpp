@@ -44,9 +44,6 @@ TestWidget::TestWidget (Ogre::Root *root, QWidget *parent) :
 
     // Alter the camera aspect ratio to match the viewport
     cam->setAspectRatio (Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
-
-    // draw on regular timer
-    //startTimer (20);
 }
 
 void TestWidget::mousePressEvent (QMouseEvent *e) 
@@ -109,7 +106,7 @@ void TestWidget::mouseMoveEvent (QMouseEvent *e)
 
 void TestWidget::resizeEvent (QResizeEvent *e)
 {
-    std::cout << "TestWidget::resizeEvent" << std::endl;
+    //std::cout << "TestWidget::resizeEvent" << std::endl;
 
     OgreWidget::resizeEvent (e);
 

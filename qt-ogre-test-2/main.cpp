@@ -9,6 +9,16 @@
 #include "testwidget.h"
 #include "viewmodel.h"
 
+class Dialog : public QDialog
+{
+    public:
+        Dialog (QWidget *parent = 0, Qt::WindowFlags f = 0)
+            : QDialog (parent, f)
+        { }
+
+        void paintEvent (QPaintEvent *e) { QWidget::paintEvent (e); }
+};
+
 //=============================================================================
 
 Ogre::Root *render_setup (int width, int height)
@@ -78,7 +88,7 @@ main (int argc, char** argv)
     {
         GraphicsView *view = new GraphicsView ();
 
-        QDialog *dialog = new QDialog (0, Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+        Dialog *dialog = new Dialog (0, Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
         dialog-> setWindowOpacity (0.8);
         dialog-> setWindowTitle ("testing baby");

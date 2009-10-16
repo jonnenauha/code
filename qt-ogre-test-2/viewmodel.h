@@ -16,17 +16,14 @@ class GraphicsView : public QGraphicsView
 
     public:
         GraphicsView ()
-            : QGraphicsView ()
-        { }
-
-        GraphicsView (QGraphicsScene *scene)
-            : QGraphicsView (scene)
+            : QGraphicsView ()//, worldscene_ (NULL)
         { }
 
     protected:
+
         void resizeEvent (QResizeEvent *event) 
         {
-            std::cout << "GraphicsView::resizeEvent" << std::endl;
+            //std::cout << "GraphicsView::resizeEvent" << std::endl;
 
             if (scene())
                 scene()-> setSceneRect (QRect (QPoint (0, 0), event-> size ()));
@@ -43,10 +40,12 @@ class GraphicsScene : public QGraphicsScene
 
     public:
         GraphicsScene (TestWidget *world) 
-            : worldscene_ (world)
+            : worldscene_ (world), buffer_ (NULL)
         { }
 
         void drawBackground (QPainter *painter, const QRectF &rect);
+
+        void drawItems (QPainter *painter, int numItems, QGraphicsItem *items[], const QStyleOptionGraphicsItem options[], QWidget *widget = 0);
 
     protected:
 
@@ -58,7 +57,8 @@ class GraphicsScene : public QGraphicsScene
 
         QMouseEvent *mouse_event_translate (QGraphicsSceneMouseEvent *from);
 
-        TestWidget *worldscene_;
+        TestWidget  *worldscene_;
+        QImage      *buffer_;
 };
 
 #endif

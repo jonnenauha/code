@@ -11,7 +11,8 @@
 OgreWidget::OgreWidget (Ogre::Root *root, QWidget *parent) : 
     QWidget (parent), 
     root_ (root), 
-    win_ (NULL)
+    win_ (NULL), 
+    buffer_ (NULL)
 {
     setAttribute (Qt::WA_PaintOnScreen);
     setAttribute (Qt::WA_PaintOutsidePaintEvent);
