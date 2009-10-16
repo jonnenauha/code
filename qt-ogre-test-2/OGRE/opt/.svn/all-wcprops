@@ -1,0 +1,497 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt
+END
+OgreBspSceneManagerPlugin.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreBspSceneManagerPlugin.h
+END
+OgreEllipsoidEmitter.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreEllipsoidEmitter.h
+END
+OgreColourFaderAffector.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreColourFaderAffector.h
+END
+OgreColourInterpolatorAffector.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreColourInterpolatorAffector.h
+END
+OgrePCZSceneNode.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZSceneNode.h
+END
+OgreBoxEmitter.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreBoxEmitter.h
+END
+OgrePointEmitter.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePointEmitter.h
+END
+OgrePCZLight.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZLight.h
+END
+OgreScaleAffectorFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreScaleAffectorFactory.h
+END
+OgreCylinderEmitterFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreCylinderEmitterFactory.h
+END
+OgreLinearForceAffectorFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreLinearForceAffectorFactory.h
+END
+OgreOctreePlugin.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctreePlugin.h
+END
+OgreRotationAffectorFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreRotationAffectorFactory.h
+END
+OgreAreaEmitter.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreAreaEmitter.h
+END
+OgrePCZSceneManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZSceneManager.h
+END
+OgreHeightmapTerrainPageSource.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreHeightmapTerrainPageSource.h
+END
+OgreQuake3ShaderManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreQuake3ShaderManager.h
+END
+OgrePCZPlugin.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZPlugin.h
+END
+OgreBspLevel.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreBspLevel.h
+END
+OgrePCZPrerequisites.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZPrerequisites.h
+END
+OgrePCZoneFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZoneFactory.h
+END
+OgreBspResourceManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreBspResourceManager.h
+END
+OgreColourFaderAffectorFactory2.h
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreColourFaderAffectorFactory2.h
+END
+OgreHollowEllipsoidEmitterFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreHollowEllipsoidEmitterFactory.h
+END
+OgreTerrainZonePage.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainZonePage.h
+END
+OgrePCZone.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZone.h
+END
+OgreDeflectorPlaneAffector.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreDeflectorPlaneAffector.h
+END
+OgreLinearForceAffector.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreLinearForceAffector.h
+END
+OgreCylinderEmitter.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreCylinderEmitter.h
+END
+OgreBspSceneNode.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreBspSceneNode.h
+END
+OgreColourInterpolatorAffectorFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreColourInterpolatorAffectorFactory.h
+END
+OgreOctreeZone.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctreeZone.h
+END
+OgreTerrainZonePageSource.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainZonePageSource.h
+END
+OgreQuake3Types.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreQuake3Types.h
+END
+OgreDefaultZone.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreDefaultZone.h
+END
+OgreColourImageAffector.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreColourImageAffector.h
+END
+OgreQuake3Shader.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreQuake3Shader.h
+END
+OgrePCPlane.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCPlane.h
+END
+OgreTerrainZoneRenderable.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainZoneRenderable.h
+END
+OgreTerrainZonePrerequisites.h
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainZonePrerequisites.h
+END
+OgreParticleFXPrerequisites.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreParticleFXPrerequisites.h
+END
+OgreRingEmitter.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreRingEmitter.h
+END
+OgreDeflectorPlaneAffectorFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreDeflectorPlaneAffectorFactory.h
+END
+OgreOctreeSceneManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctreeSceneManager.h
+END
+OgreBspSceneManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreBspSceneManager.h
+END
+OgreTerrainZone.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainZone.h
+END
+OgreTerrainPage.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainPage.h
+END
+OgreColourFaderAffector2.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreColourFaderAffector2.h
+END
+OgrePortal.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePortal.h
+END
+OgreOctreeZonePrerequisites.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctreeZonePrerequisites.h
+END
+OgreHollowEllipsoidEmitter.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreHollowEllipsoidEmitter.h
+END
+OgreDirectionRandomiserAffectorFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreDirectionRandomiserAffectorFactory.h
+END
+OgreColourFaderAffectorFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreColourFaderAffectorFactory.h
+END
+OgreBspPrerequisites.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreBspPrerequisites.h
+END
+OgrePointEmitterFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePointEmitterFactory.h
+END
+OgreTerrainSceneManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainSceneManager.h
+END
+OgreDirectionRandomiserAffector.h
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreDirectionRandomiserAffector.h
+END
+OgreOctreeZoneOctree.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctreeZoneOctree.h
+END
+OgreParticleFXPlugin.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreParticleFXPlugin.h
+END
+OgreRingEmitterFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreRingEmitterFactory.h
+END
+OgreOctree.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctree.h
+END
+OgreQuake3Level.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreQuake3Level.h
+END
+OgreTerrainPageSource.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainPageSource.h
+END
+OgrePCZFrustum.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZFrustum.h
+END
+OgreOctreeSceneQuery.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctreeSceneQuery.h
+END
+OgreOctreeNode.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctreeNode.h
+END
+OgreTerrainRenderable.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainRenderable.h
+END
+OgreTerrainPrerequisites.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainPrerequisites.h
+END
+OgreOctreeCamera.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctreeCamera.h
+END
+OgreBspNode.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreBspNode.h
+END
+OgreTerrainVertexProgram.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreTerrainVertexProgram.h
+END
+OgreOctreeZonePlugin.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreOctreeZonePlugin.h
+END
+OgreCapsule.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreCapsule.h
+END
+OgrePCZSceneQuery.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZSceneQuery.h
+END
+OgreScaleAffector.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreScaleAffector.h
+END
+OgreSegment.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreSegment.h
+END
+OgrePCZCamera.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgrePCZCamera.h
+END
+OgreHeightmapTerrainZonePageSource.h
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreHeightmapTerrainZonePageSource.h
+END
+OgreEllipsoidEmitterFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreEllipsoidEmitterFactory.h
+END
+OgreColourImageAffectorFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreColourImageAffectorFactory.h
+END
+OgreRotationAffector.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreRotationAffector.h
+END
+OgreBoxEmitterFactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/viewerdeps/!svn/ver/43/bin/win32/build_deps/Ogre/include/opt/OgreBoxEmitterFactory.h
+END
