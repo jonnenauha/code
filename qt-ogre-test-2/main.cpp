@@ -97,6 +97,7 @@ main (int argc, char** argv)
         TestWidget *scenewidget = new TestWidget (ogre_scene_graph, view);
 
         GraphicsScene *scene = new GraphicsScene (scenewidget);
+        scene-> setView (view);
         scene-> addWidget (dialog);
         
         view-> setScene (scene);

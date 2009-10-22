@@ -39,8 +39,10 @@ class GraphicsScene : public QGraphicsScene
 
     public:
         GraphicsScene (TestWidget *world) 
-            : worldscene_ (world), buffer_ (NULL)
+            : worldscene_ (world), view_ (NULL)
         { }
+
+        void setView (QGraphicsView *view) { view_ = view; }
 
         void drawBackground (QPainter *painter, const QRectF &rect);
 
@@ -57,7 +59,7 @@ class GraphicsScene : public QGraphicsScene
         QMouseEvent *mouse_event_translate (QGraphicsSceneMouseEvent *from);
 
         TestWidget  *worldscene_;
-        QImage      *buffer_;
+        QGraphicsView *view_;
 };
 
 #endif
