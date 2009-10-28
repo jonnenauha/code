@@ -1,8 +1,4 @@
-#include <Ogre.h>
-#include <OgreConfigFile.h>
-#include <OIS/OIS.h>
-
-using namespace Ogre;
+#include "main.h"
 
 class WorldModel
 {
@@ -32,27 +28,27 @@ class WorldModel
             camera_->lookAt(0, 0, 0);
 
             // Create a material for the plane (just a simple texture, here grass.jpg)
-            MaterialPtr m = MaterialManager::getSingleton().
-                create ("PlaneMat", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            Ogre::MaterialPtr m = Ogre::MaterialManager::getSingleton().
+                create ("PlaneMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-            TextureUnitState* t = m->getTechnique(0)->getPass(0)->createTextureUnitState ("test.jpg");
+            Ogre::TextureUnitState* t = m->getTechnique(0)->getPass(0)->
+                createTextureUnitState ("test.jpg");
 
             // Create a simple plane
-            MovablePlane *plane = new MovablePlane ("Plane");
+            Ogre::MovablePlane *plane = new Ogre::MovablePlane ("Plane");
             plane->d = 0;
             plane->normal = Vector3::UNIT_Y;
 
-            MeshManager::getSingleton().
-                createPlane ("PlaneMesh", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
+            Ogre::MeshManager::getSingleton().
+                createPlane ("PlaneMesh", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
                         *plane, 120, 120, 1, 1, true, 1, 1, 1, Vector3::UNIT_Z);
 
-            Entity *planeent = scenemgr_-> createEntity ("PlaneEntity", "PlaneMesh");
+            Ogre::Entity *planeent = scenemgr_-> createEntity ("PlaneEntity", "PlaneMesh");
             planeent-> setMaterialName ("PlaneMat");
 
             // Attach the plane to a scene node
             planenode_ = scenemgr_-> getRootSceneNode()-> createChildSceneNode ();
             planenode_-> attachObject (planeent);
-
         }
 
     private:
@@ -66,85 +62,105 @@ class WorldModel
         friend class WorldController;
 };
 
-class WorldRenderer : public RenderTargetListener
+class WorldRenderer : public Ogre::RenderTargetListener
 {
     public:
         WorldRenderer (WorldModel *model, Ogre::RenderWindow *win) 
             : model_ (model), win_ (win)
         { 
-            // Create one viewport, entire window
-            view_ = win_-> addViewport (model_->camera_);
-            view_-> setBackgroundColour (ColourValue (0,0,0));
+            showwin_ = true;
+            showrtt_ = true;
+            
+            if (showwin_)
+            {
+                // Create one viewport, entire window
+                view_ = win_-> addViewport (model_->camera_);
+                view_-> setBackgroundColour (ColourValue (0,0,0));
 
-            // Alter the camera aspect ratio to match the viewport
-            model_-> camera_-> setAspectRatio 
-                (Real (view_-> getActualWidth()) / 
-                 Real (view_-> getActualHeight()));
+                // Alter the camera aspect ratio to match the viewport
+                model_-> camera_-> setAspectRatio 
+                    (Real (view_-> getActualWidth()) / 
+                     Real (view_-> getActualHeight()));
+            }
+            else
+            {
+                // window render target can be removed
+                Ogre::Root::getSingleton().
+                    getRenderSystem()-> detachRenderTarget ("OGRE Render Window");
+            }
 
             // Create the textures
-            TexturePtr texture = Ogre::TextureManager::getSingleton().
-                createManual ("RttTex", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 
-                        800/*win_->getWidth()*/, 600/*win_->getHeight()*/, 0, PF_R8G8B8, TU_RENDERTARGET); 
+            Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().
+                createManual ("RttTex", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 
+                        800/*win_->getWidth()*/, 600/*win_->getHeight()*/, 0, Ogre::PF_R8G8B8, Ogre::TU_RENDERTARGET); 
 
-            RenderTexture *rendertex = texture->getBuffer()->getRenderTarget();
-            rendertex-> addViewport (model_-> camera_);
-            rendertex-> getViewport (0)-> setClearEveryFrame (true);
-            rendertex-> getViewport (0)-> setBackgroundColour (ColourValue::Black);
-            rendertex-> getViewport (0)-> setOverlaysEnabled (false);
-            rendertex-> addListener (this);
+            tex_ = texture->getBuffer()->getRenderTarget();
+            tex_-> addViewport (model_-> camera_);
+            tex_-> getViewport (0)-> setClearEveryFrame (true);
+            tex_-> getViewport (0)-> setBackgroundColour (ColourValue::Black);
+            tex_-> getViewport (0)-> setOverlaysEnabled (false);
+            tex_-> addListener (this);
 
-            // Create the mini screen rectangle and attach it to a scene node
-            miniscreen_ = new Ogre::Rectangle2D(true);
-            miniscreen_->setCorners(0.5, -0.5, 1.0, -1.0);
-            miniscreen_->setBoundingBox(AxisAlignedBox(-100000.0*Vector3::UNIT_SCALE, 100000.0*Vector3::UNIT_SCALE)); 
+            if (showrtt_)
+            {
+                // Create the mini screen rectangle and attach it to a scene node
+                miniscreen_ = new Ogre::Rectangle2D (true);
+                miniscreen_->setCorners (0.5, -0.5, 1.0, -1.0);
+                miniscreen_->setBoundingBox (Ogre::AxisAlignedBox (-100000.0*Vector3::UNIT_SCALE, 100000.0*Vector3::UNIT_SCALE)); 
 
-            model_-> scenemgr_-> getRootSceneNode()-> 
-                createChildSceneNode ("MiniScreenNode")-> attachObject (miniscreen_);
+                model_-> scenemgr_-> getRootSceneNode()-> 
+                    createChildSceneNode ("MiniScreenNode")-> attachObject (miniscreen_);
 
-            // Create the material for the mini screen
-            MaterialPtr material = MaterialManager::getSingleton().
-                create ("RttMat", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                // Create the material for the mini screen
+                Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().
+                    create ("RttMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-            Ogre::Technique *technique = material->createTechnique();
-            technique->createPass();
-            material->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-            material->getTechnique(0)->getPass(0)->createTextureUnitState("RttTex");
+                Ogre::Technique *technique = material->createTechnique();
+                technique->createPass();
+                material->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+                material->getTechnique(0)->getPass(0)->createTextureUnitState("RttTex");
 
-            // Apply the material to the mini screen
-            miniscreen_-> setMaterial ("RttMat");
+                // Apply the material to the mini screen
+                miniscreen_-> setMaterial ("RttMat");
+            }
         }
 
         ~WorldRenderer ()
         {
+            tex_-> writeContentsToFile ("rtt.png");
             delete miniscreen_;
         }
         
-        void preRenderTargetUpdate(const RenderTargetEvent &evt)
+        void preRenderTargetUpdate(const Ogre::RenderTargetEvent &evt)
         {
-            miniscreen_-> setVisible (false);
+            if (showrtt_) miniscreen_-> setVisible (false);
         }
 
-        void postRenderTargetUpdate(const RenderTargetEvent &evt)
+        void postRenderTargetUpdate(const Ogre::RenderTargetEvent &evt)
         {
-            miniscreen_-> setVisible (true);
+            if (showrtt_) miniscreen_-> setVisible (true);
         }
 
     public:
 
+        bool                showwin_;
+        bool                showrtt_;
+
         Ogre::RenderWindow  *win_;
+        Ogre::RenderTexture *tex_;
         Ogre::Viewport      *view_;
         Ogre::Rectangle2D   *miniscreen_;
 
         WorldModel          *model_;
 };
 
-class WindowController : public WindowEventListener, public FrameListener
+class WindowController : public Ogre::WindowEventListener, public Ogre::FrameListener
 {
     public: 
         WindowController (Ogre::RenderWindow *win)
             : win_ (win)
         {
-            LogManager::getSingletonPtr()-> logMessage ("Initializing OIS");
+            Ogre::LogManager::getSingletonPtr()-> logMessage ("Initializing OIS");
 
             OIS::ParamList pl;
             std::ostringstream winidstr; size_t winid = 0;
@@ -155,16 +171,16 @@ class WindowController : public WindowEventListener, public FrameListener
             inputman_ = OIS::InputManager::createInputSystem (pl);
             keyboard_ = static_cast <OIS::Keyboard*> (inputman_-> createInputObject (OIS::OISKeyboard, false));
 
-            WindowEventUtilities::addWindowEventListener (win_, this);
+            Ogre::WindowEventUtilities::addWindowEventListener (win_, this);
         }
 
         virtual ~WindowController ()
         {
-            WindowEventUtilities::removeWindowEventListener (win_, this);
+            Ogre::WindowEventUtilities::removeWindowEventListener (win_, this);
             windowClosed (win_);
         }
 
-        virtual void windowClosed (RenderWindow* rw)
+        virtual void windowClosed (Ogre::RenderWindow* rw)
         {
             if ((rw == win_) && (inputman_))
             {
@@ -174,7 +190,13 @@ class WindowController : public WindowEventListener, public FrameListener
             }
         }
 
-        bool frameRenderingQueued (const FrameEvent& evt)
+        bool frameStarted (const Ogre::FrameEvent& evt)
+        {
+            static int count = 0; ++ count;
+            return (count < 5000); // quit after 100 frames always
+        }
+
+        bool frameRenderingQueued (const Ogre::FrameEvent& evt)
         {
             if (win_-> isClosed()) return false;
 
@@ -195,7 +217,7 @@ class WindowController : public WindowEventListener, public FrameListener
         OIS::Keyboard       *keyboard_;
 };
 
-class WorldController : public FrameListener
+class WorldController : public Ogre::FrameListener
 {
     public:
         WorldController (WorldModel *model) 
@@ -203,44 +225,50 @@ class WorldController : public FrameListener
         { }
         
         // rotate the plane
-        bool frameStarted (const FrameEvent& evt)
+        bool frameStarted (const Ogre::FrameEvent& evt)
         {
             model_-> planenode_-> yaw (Radian (evt.timeSinceLastFrame));
 
-            return FrameListener::frameStarted (evt);
+            return Ogre::FrameListener::frameStarted (evt);
         }
 
-    public:
+    private:
         WorldModel          *model_;
 };
+
 
 class Ogre3DApplication
 {
     public:
         Ogre3DApplication (const Ogre::String &pluginpath, const Ogre::String &resourcepath)
         {
-            root_ = OGRE_NEW Root ();//(pluginpath, resourcepath + "ogre.cfg", resourcepath + "ogre.log");
+            root_ = OGRE_NEW Ogre::Root ();//(pluginpath, resourcepath + "ogre.cfg", resourcepath + "ogre.log");
 
             setup_resources ();
             root_-> restoreConfig();
 
             win_ = root_->initialise (true);
-            scenemgr_ = root_-> createSceneManager (ST_GENERIC, "SceneManager");
 
-            ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+            scenemgr_ = root_-> createSceneManager (Ogre::ST_GENERIC, "SceneManager");
+
+            Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 
             model_ = new WorldModel (scenemgr_);
             renderer_ = new WorldRenderer (model_, win_);
             controller_ = new WorldController (model_);
-            winctrl_ = new WindowController (win_);
+            //winctrl_ = new WindowController (win_);
 
             root_-> addFrameListener (controller_);
-            root_-> addFrameListener (winctrl_);
+            //root_-> addFrameListener (winctrl_);
+
+            Ogre::RenderSystem::RenderTargetIterator it (root_->getRenderSystem()->getRenderTargetIterator());
+            while (it.hasMoreElements())
+				std::cout << "Render Target: " << it.getNext()-> getName() << std::endl;
         }
 
         virtual ~Ogre3DApplication ()
         {
-            delete winctrl_;
+            //delete winctrl_;
             delete controller_;
             delete renderer_;
             delete model_;
@@ -248,7 +276,10 @@ class Ogre3DApplication
             //OGRE_DELETE root_;
         }
 
-        void Run () { root_-> startRendering (); }
+        void Run () 
+        { 
+            root_-> startRendering (); 
+        }
 
     protected:
         void setup_resources ()
@@ -306,12 +337,33 @@ extern "C" {
         {
             // Create application object
             Ogre3DApplication app ("./", "./");
+            QApplication qapp (argc, argv);
+
+            QGraphicsView *view = new QGraphicsView ();
+            QGraphicsScene *scene = new QGraphicsScene ();
+            QDialog *dialog = new QDialog ();
+
+            dialog-> setWindowOpacity (0.8);
+            dialog-> setWindowTitle ("testing baby");
+            dialog-> setLayout (new QVBoxLayout);
+            dialog-> layout()-> addWidget (new QLineEdit);
+
+            scene-> addWidget (dialog);
+            view-> setScene (scene);
+            view-> setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+
+            QGraphicsItem *item (view-> items().front());
+            item-> setFlag (QGraphicsItem::ItemIsMovable);
+            item-> setCacheMode (QGraphicsItem::DeviceCoordinateCache);
+            item-> setPos (10, 50);
+
+            view-> show();
 
             try 
             {
-                app.Run ();
+                //app.Run ();
             } 
-            catch (Exception& e) 
+            catch (Ogre::Exception& e) 
             {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
                 MessageBoxA(NULL, e.getFullDescription().c_str(),
@@ -321,7 +373,7 @@ extern "C" {
 #endif
             }
 
-            return 0;
+            return qapp.exec();
         }
 
 #ifdef __cplusplus

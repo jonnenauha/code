@@ -18,10 +18,11 @@ include(${QT_USE_FILE})
 
 # add_subdirectory (.)              # recurse into subdirs
 
-include_directories (.)             # Add include directories to the build.
-link_directories (.)                # Specify directories in which the linker will look for libraries.
+# manually use 4.6-beta
+#include_directories (/usr/local/Trolltech/Qt-4.6.0/include/QtCore /usr/local/Trolltech/Qt-4.6.0/include/QtGui)
+#link_directories (/usr/local/Trolltech/Qt-4.6.0/lib)
+#add_definitions (-DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_NO_KEYWORDS -DQT_DEBUG)
 
-add_definitions (-DQT_NO_KEYWORDS)          # Adds -D define flags to the compilation of source files.
 # add_dependencies (main dep)       # Add a dependency between top-level targets.
 
 qt4_generate_moc (ogrewidget.h ogrewidget_moc.cpp)
