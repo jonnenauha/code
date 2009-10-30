@@ -78,9 +78,13 @@ class WorldView //: public Ogre::RenderTargetListener
         
         void RenderOneFrame (Ogre::PixelBox &dst);
 
-        const char *GetRenderTargetName ();
+        const char *GetRenderTargetName () { return "world-scene-off-screen-texture"; }
 
     public:
+
+        void create_render_texture_ (size_t width, size_t height);
+
+        void adjust_render_texture_to_pixel_box_ (Ogre::PixelBox &dst);
 
         Ogre::Root              *root_;
         Ogre::TextureManager    *texmgr_;
@@ -155,7 +159,7 @@ class RenderShim : public QObject
 
         void Update ()
         {
-            QSize uisize (uiview_-> size());
+            QSize uisize (uiview_-> viewport()-> size());
             QRect uirect (QPoint (0, 0), uisize);
 
             QImage uibuffer (uisize, QImage::Format_ARGB32);

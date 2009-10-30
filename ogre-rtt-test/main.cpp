@@ -84,11 +84,29 @@ WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) :
         // TODO: unmap the empty window, as it's still displayed
     }
 
+    create_render_texture_ (640, 480); // pick a safe resolution
+}
+
+WorldView::~WorldView ()
+{
+}
+
+void WorldView::RenderOneFrame (Ogre::PixelBox &dst)
+{
+    adjust_render_texture_to_pixel_box_ (dst);
+
+    root_-> renderOneFrame();
+
+    texture_-> getBuffer()-> blitToMemory (dst);
+}
+
+void WorldView::create_render_texture_ (size_t width, size_t height)
+{
     // Create the off-screen RTT texture
     texture_ = texmgr_-> 
         createManual (GetRenderTargetName(), 
                 Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 
-                800/*win_->getWidth()*/, 600/*win_->getHeight()*/, 0, Ogre::PF_R8G8B8, Ogre::TU_RENDERTARGET); 
+                width, height, 0, Ogre::PF_R8G8B8, Ogre::TU_RENDERTARGET); 
 
     // Set up texture as RTT
     Ogre::RenderTexture *rendertex (texture_-> getBuffer()-> getRenderTarget());
@@ -99,19 +117,12 @@ WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) :
     //rendertex-> addListener (this); // this was used for the mini-view
 }
 
-WorldView::~WorldView ()
+void WorldView::adjust_render_texture_to_pixel_box_ (Ogre::PixelBox &dst)
 {
-}
+    size_t width (dst.getWidth()), height (dst.getHeight());
 
-void WorldView::RenderOneFrame (Ogre::PixelBox &dst)
-{
-    root_-> renderOneFrame();
-    texture_-> getBuffer()-> blitToMemory (dst);
-}
-
-const char *WorldView::GetRenderTargetName ()
-{
-    return "world-scene-off-screen-texture";
+    if ((width != texture_-> getWidth()) || (height != texture_-> getHeight()))
+        create_render_texture_ (width, height);
 }
 
 
