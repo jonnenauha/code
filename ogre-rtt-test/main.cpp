@@ -359,6 +359,8 @@ extern "C" {
 
             view-> show();
 
+            AppController ctrl (view);
+
             try 
             {
                 //app.Run ();
