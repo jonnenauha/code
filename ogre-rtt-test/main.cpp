@@ -102,6 +102,8 @@ void WorldView::RenderOneFrame (Ogre::PixelBox &dst)
 
 void WorldView::create_render_texture_ (size_t width, size_t height)
 {
+    texmgr_-> remove (GetRenderTargetName());
+
     // Create the off-screen RTT texture
     texture_ = texmgr_-> 
         createManual (GetRenderTargetName(), 
@@ -253,26 +255,88 @@ void Ogre3DApplication::setup_resources ()
 QtApplication::QtApplication (int &argc, char **argv) : 
     QApplication (argc, argv)
 {
+    //view_ = new RedirectedGraphicsView ();
     view_ = new QGraphicsView ();
     scene_ = new QGraphicsScene ();
 
-    QDialog *dialog = new QDialog ();
+    QDialog *dialog1 = new QDialog ();
+    QDialog *dialog2 = new QDialog ();
 
-    dialog-> setWindowOpacity (0.8);
-    dialog-> setWindowTitle ("testing baby");
-    dialog-> setLayout (new QVBoxLayout);
-    dialog-> layout()-> addWidget (new QLineEdit);
+    dialog1-> setWindowOpacity (0.8);
+    dialog1-> setWindowTitle ("testing baby");
+    dialog1-> setLayout (new QVBoxLayout);
+    dialog1-> layout()-> addWidget (new QLineEdit);
 
-    scene_-> addWidget (dialog);
+    dialog2-> setWindowOpacity (0.8);
+    dialog2-> setWindowTitle ("you suck");
+    dialog2-> setLayout (new QVBoxLayout);
+    dialog2-> layout()-> addWidget (new QLineEdit);
+
+    scene_-> addWidget (dialog1);
+    scene_-> addWidget (dialog2);
     view_-> setScene (scene_);
     view_-> setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
 
-    QGraphicsItem *item (view_-> items().front());
-    item-> setFlag (QGraphicsItem::ItemIsMovable);
-    item-> setCacheMode (QGraphicsItem::DeviceCoordinateCache);
-    item-> setPos (10, 50);
+    QGraphicsItem *item1 (view_-> items().takeAt (0));
+    item1-> setFlag (QGraphicsItem::ItemIsMovable);
+    item1-> setCacheMode (QGraphicsItem::DeviceCoordinateCache);
+    item1-> setPos (10, 50);
+
+    QGraphicsItem *item2 (view_-> items().takeAt (1));
+    item2-> setFlag (QGraphicsItem::ItemIsMovable);
+    item2-> setCacheMode (QGraphicsItem::DeviceCoordinateCache);
+    item2-> setPos (10, 100);
 
     view_-> show();
+}
+
+//=============================================================================
+//
+
+static void render_world_view_to_buffer (WorldView *view, Ogre::PixelBox &box)
+{
+    view-> RenderOneFrame (box);
+}
+
+static void render_ui_view_to_buffer (QGraphicsView *view, QPainter *painter)
+{
+    view-> render (painter);
+}
+
+
+RenderShim::RenderShim (QGraphicsView *uiview, WorldView *world) : 
+    uiview_ (uiview), worldview_ (world)
+{
+    startTimer (20);
+    uiview_-> setUpdatesEnabled (false);
+    uiview_-> viewport()-> setAttribute (Qt::WA_PaintOnScreen);
+    uiview_-> viewport()-> setAttribute (Qt::WA_PaintOutsidePaintEvent);
+    uiview_-> viewport()-> setAttribute (Qt::WA_NoSystemBackground);
+}
+
+void RenderShim::Update ()
+{
+    QSize viewsize (uiview_-> viewport()-> size());
+    QRect viewrect (QPoint (0, 0), viewsize);
+
+    // compositing back buffer
+    QImage buffer (viewsize, QImage::Format_ARGB32);
+    QPainter painter (&buffer);
+    painter.setCompositionMode (QPainter::CompositionMode_SourceOver);
+    
+    // blit ogre view into buffer
+    Ogre::Box bounds (0, 0, viewsize.width(), viewsize.height());
+    Ogre::PixelBox worldbufferbox (bounds, Ogre::PF_A8R8G8B8, (void *) buffer.bits());
+    
+    worldview_-> RenderOneFrame (worldbufferbox);
+    
+    // paint ui view into buffer
+    //uiview_-> Render (painter, viewrect);
+    uiview_-> render (&painter);
+
+    // draw the composite to the widget
+    QPainter widgetpainter (uiview_-> viewport());
+    widgetpainter.drawImage (viewrect, buffer);
 }
 
 //=============================================================================

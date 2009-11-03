@@ -3,6 +3,8 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <QThread>
+
 #include <Ogre.h>
 #include <OgreConfigFile.h>
 #include <OIS/OIS.h>
@@ -126,6 +128,71 @@ class Ogre3DApplication
 };
 
 
+class RedirectedGraphicsView : public QGraphicsView
+{
+    Q_OBJECT
+
+    public:
+
+        void Render (QPainter &painter, QRect &target)
+        {
+            painter.drawImage (target, *backbuffer_); // should map 1-1??
+        }
+
+        void CleanUsedBuffers ()
+        {
+            std::list<QImage *>::iterator it (used_buffers_.begin());
+            for (; it != used_buffers_.end(); ++it)
+                delete *it;
+        }
+
+    protected:
+
+        void resizeEvent (QResizeEvent *e)
+        {
+            QGraphicsView::resizeEvent (e);
+
+            QSize maxsize = (backbuffer_)? 
+                viewport()-> size().expandedTo (backbuffer_-> size()) : 
+                viewport()-> size();
+
+            if (backbuffer_ && (backbuffer_-> size() != maxsize))
+            {
+                used_buffers_.push_back (backbuffer_);
+                backbuffer_ = NULL;
+            }
+                
+            if (!backbuffer_)
+                backbuffer_ = new QImage (maxsize, QImage::Format_ARGB32);
+        }
+        
+        void paintEvent (QPaintEvent *e)
+        {
+            QRect exposed (e-> region().boundingRect());
+            QRectF bufexposed (exposed); // buffer should map 1-1??
+
+            // paint to back buffer
+            QPainter painter (backbuffer_);
+            
+            // clean previously dirty rect
+            //painter.fillRect (dirty_, Qt::transparent);
+            backbuffer_-> fill (Qt::transparent);
+
+            // draw new exposed rect
+            QGraphicsView::render (&painter, bufexposed, exposed);
+            
+            // store this expose
+            dirty_ = exposed;
+        }
+
+    private:
+
+        QImage     *backbuffer_;
+        QRect       dirty_;
+
+        std::list <QImage *> used_buffers_;
+};
+
 class QtApplication : public QApplication
 {
     Q_OBJECT
@@ -133,11 +200,13 @@ class QtApplication : public QApplication
     public:
         QtApplication (int &argc, char **argv);
 
+        //RedirectedGraphicsView *GetView () { return view_; }
         QGraphicsView *GetView () { return view_; }
         QGraphicsScene *GetScene () { return scene_; }
 
     private:
 
+        //RedirectedGraphicsView  *view_;
         QGraphicsView   *view_;
         QGraphicsScene   *scene_;
 };
@@ -147,50 +216,15 @@ class RenderShim : public QObject
     Q_OBJECT
 
     public:
-        RenderShim (QGraphicsView *uiview, WorldView *world) 
-            : uiview_ (uiview), worldview_ (world)
-        {
-            startTimer (20);
-            uiview_-> setUpdatesEnabled (false);
-            uiview_-> viewport()-> setAttribute (Qt::WA_PaintOnScreen);
-            uiview_-> viewport()-> setAttribute (Qt::WA_PaintOutsidePaintEvent);
-            uiview_-> viewport()-> setAttribute (Qt::WA_NoSystemBackground);
-        }
+        RenderShim (QGraphicsView *uiview, WorldView *world);
 
-        void Update ()
-        {
-            QSize uisize (uiview_-> viewport()-> size());
-            QRect uirect (QPoint (0, 0), uisize);
-
-            QImage uibuffer (uisize, QImage::Format_ARGB32);
-            QImage worldbuffer (uisize, QImage::Format_ARGB32);
-            
-            uibuffer.fill (Qt::transparent);
-            worldbuffer.fill (Qt::transparent);
-
-            Ogre::Box bounds (0, 0, uisize.width(), uisize.height());
-            Ogre::PixelBox worldbufferbox (bounds, Ogre::PF_A8R8G8B8, (void *) worldbuffer.bits());
-
-            // draw the world view
-            worldview_-> RenderOneFrame (worldbufferbox);
-            
-            // draw the ui view
-            QPainter compositor (&uibuffer);
-            uiview_-> render (&compositor);
-
-            // composit the two together
-            compositor.setCompositionMode (QPainter::CompositionMode_DestinationOver);
-            compositor.drawImage (uirect, worldbuffer);
-
-            // draw the composit to the widget
-            QPainter widgetpainter (uiview_-> viewport());
-            widgetpainter.drawImage (uirect, uibuffer);
-        }
+        void Update ();
 
     protected:
         void timerEvent (QTimerEvent *e) { Update (); }
 
     private:
+        //RedirectedGraphicsView           *uiview_;
         QGraphicsView           *uiview_;
         WorldView               *worldview_;
 };
