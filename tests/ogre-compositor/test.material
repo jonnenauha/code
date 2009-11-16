@@ -1,0 +1,13 @@
+material PlaneMat
+{
+    technique
+    {
+        pass
+        {
+            texture_unit
+            {
+                texture test.jpg
+            }
+        }
+    }
+}
