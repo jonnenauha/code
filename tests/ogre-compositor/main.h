@@ -78,9 +78,10 @@ class WorldView //: public Ogre::RenderTargetListener
         WorldView (WorldModel *model, Ogre::RenderWindow *win);
         virtual ~WorldView ();
         
-        void RenderOneFrame (Ogre::PixelBox &dst);
+        void RenderOneFrame ();
+        void OverlayUI (Ogre::PixelBox &ui);
 
-        const char *GetRenderTargetName () { return "my-off-screen-texture"; }
+        const char *GetRenderTargetName () { return "test/texture/UI"; }
 
     public:
 

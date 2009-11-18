@@ -58,7 +58,7 @@ WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) :
     root_ = Ogre::Root::getSingletonPtr();
     texmgr_ = Ogre::TextureManager::getSingletonPtr();
 
-    int width (640), height (480);
+    int width (1024), height (768); // safe size
 
     if (true)
     {
@@ -72,21 +72,23 @@ WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) :
              Real (view_-> getActualHeight()));
 
         // set up off-screen texture
+        texture_ =
+            Ogre::TextureManager::getSingleton().createManual
+             ("test/texture/UI",
+              Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
+              Ogre::TEX_TYPE_2D, width, height, 0, 
+              Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+
         Ogre::MaterialPtr material
             (Ogre::MaterialManager::getSingleton().create
              ("test/material/UI", 
               Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 
-        Ogre::TexturePtr texture
-            (Ogre::TextureManager::getSingleton().createManual
-             ("test/texture/UI",
-              Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
-              Ogre::TEX_TYPE_2D, width, height, 0, 
-              Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE));
-
         Ogre::TextureUnitState *state 
             (material->getTechnique(0)->getPass(0)->createTextureUnitState());
-        state-> setTextureName ("ui-big.png");
+
+        //state-> setTextureName ("ui-big.png");
+        state-> setTextureName ("test/texture/UI");
 
         material->getTechnique(0)->getPass(0)->setSceneBlending
             (Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
@@ -125,13 +127,17 @@ WorldView::~WorldView ()
 {
 }
 
-void WorldView::RenderOneFrame (Ogre::PixelBox &dst)
+void WorldView::RenderOneFrame ()
 {
-    adjust_render_texture_to_pixel_box_ (dst);
+    root_-> _fireFrameStarted ();
+    win_-> update();
+    root_-> _fireFrameRenderingQueued ();
+    root_-> _fireFrameEnded ();
+}
 
-    root_-> renderOneFrame();
-
-    texture_-> getBuffer()-> blitToMemory (dst);
+void WorldView::OverlayUI (Ogre::PixelBox &ui)
+{
+    texture_-> getBuffer()-> blitFromMemory (ui);
 }
 
 void WorldView::create_render_texture_ (size_t width, size_t height)
@@ -168,16 +174,16 @@ void WorldView::adjust_render_texture_to_pixel_box_ (Ogre::PixelBox &dst)
 WindowController::WindowController (Ogre::RenderWindow *win) : 
     win_ (win)
 {
-    Ogre::LogManager::getSingletonPtr()-> logMessage ("Initializing OIS");
+    //Ogre::LogManager::getSingletonPtr()-> logMessage ("Initializing OIS");
 
-    OIS::ParamList pl;
-    std::ostringstream winidstr; size_t winid = 0;
+    //OIS::ParamList pl;
+    //std::ostringstream winidstr; size_t winid = 0;
 
-    win-> getCustomAttribute ("WINDOW", &winid); winidstr << winid;
-    pl.insert (std::make_pair (std::string ("WINDOW"), winidstr.str()));
+    //win-> getCustomAttribute ("WINDOW", &winid); winidstr << winid;
+    //pl.insert (std::make_pair (std::string ("WINDOW"), winidstr.str()));
 
-    inputman_ = OIS::InputManager::createInputSystem (pl);
-    keyboard_ = static_cast <OIS::Keyboard*> (inputman_-> createInputObject (OIS::OISKeyboard, false));
+    //inputman_ = OIS::InputManager::createInputSystem (pl);
+    //keyboard_ = static_cast <OIS::Keyboard*> (inputman_-> createInputObject (OIS::OISKeyboard, false));
 
     Ogre::WindowEventUtilities::addWindowEventListener (win_, this);
 }
@@ -190,12 +196,12 @@ WindowController::~WindowController ()
 
 void WindowController::windowClosed (Ogre::RenderWindow* rw)
 {
-    if ((rw == win_) && (inputman_))
-    {
-        inputman_-> destroyInputObject (keyboard_);
-        OIS::InputManager::destroyInputSystem (inputman_);
-        inputman_ = 0;
-    }
+    //if ((rw == win_) && (inputman_))
+    //{
+    //    inputman_-> destroyInputObject (keyboard_);
+    //    OIS::InputManager::destroyInputSystem (inputman_);
+    //    inputman_ = 0;
+    //}
 }
 
 bool WindowController::frameStarted (const Ogre::FrameEvent& evt)
@@ -208,12 +214,12 @@ bool WindowController::frameRenderingQueued (const Ogre::FrameEvent& evt)
 {
     if (win_-> isClosed()) return false;
 
-    keyboard_-> capture();
+    //keyboard_-> capture();
 
-    if (!keyboard_-> buffered())
-        if (keyboard_-> isKeyDown (OIS::KC_ESCAPE) || 
-                keyboard_-> isKeyDown (OIS::KC_Q))
-            return false;
+    //if (!keyboard_-> buffered())
+    //    if (keyboard_-> isKeyDown (OIS::KC_ESCAPE) || 
+    //            keyboard_-> isKeyDown (OIS::KC_Q))
+    //        return false;
 
     return true;
 }
@@ -319,24 +325,13 @@ QtApplication::QtApplication (int &argc, char **argv) :
     QGraphicsItem *item2 (view_-> items().takeAt (1));
     item2-> setFlag (QGraphicsItem::ItemIsMovable);
     item2-> setCacheMode (QGraphicsItem::DeviceCoordinateCache);
-    item2-> setPos (10, 100);
+    item2-> setPos (50, 50);
 
     view_-> show();
 }
 
 //=============================================================================
 //
-
-static void render_world_view_to_buffer (WorldView *view, Ogre::PixelBox &box)
-{
-    view-> RenderOneFrame (box);
-}
-
-static void render_ui_view_to_buffer (QGraphicsView *view, QPainter *painter)
-{
-    view-> render (painter);
-}
-
 
 RenderShim::RenderShim (QGraphicsView *uiview, WorldView *world) : 
     uiview_ (uiview), worldview_ (world)
@@ -346,11 +341,13 @@ RenderShim::RenderShim (QGraphicsView *uiview, WorldView *world) :
     uiview_-> viewport()-> setAttribute (Qt::WA_PaintOnScreen);
     uiview_-> viewport()-> setAttribute (Qt::WA_PaintOutsidePaintEvent);
     uiview_-> viewport()-> setAttribute (Qt::WA_NoSystemBackground);
+    uiview_-> resize (1024, 768);
 }
 
 void RenderShim::Update ()
 {
-    QSize viewsize (uiview_-> viewport()-> size());
+    //QSize viewsize (uiview_-> viewport()-> size());
+    QSize viewsize (uiview_-> size());
     QRect viewrect (QPoint (0, 0), viewsize);
 
     // compositing back buffer
@@ -358,19 +355,15 @@ void RenderShim::Update ()
     QPainter painter (&buffer);
     painter.setCompositionMode (QPainter::CompositionMode_SourceOver);
     
-    // blit ogre view into buffer
-    Ogre::Box bounds (0, 0, viewsize.width(), viewsize.height());
-    Ogre::PixelBox worldbufferbox (bounds, Ogre::PF_A8R8G8B8, (void *) buffer.bits());
-    
-    worldview_-> RenderOneFrame (worldbufferbox);
-    
     // paint ui view into buffer
-    //uiview_-> Render (painter, viewrect);
     uiview_-> render (&painter);
 
-    // draw the composite to the widget
-    QPainter widgetpainter (uiview_-> viewport());
-    widgetpainter.drawImage (viewrect, buffer);
+    // blit ogre view into buffer
+    Ogre::Box bounds (0, 0, viewsize.width(), viewsize.height());
+    Ogre::PixelBox bufbox (bounds, Ogre::PF_A8R8G8B8, (void *) buffer.bits());
+    
+    worldview_-> OverlayUI (bufbox);
+    worldview_-> RenderOneFrame ();
 }
 
 //=============================================================================
@@ -393,12 +386,12 @@ extern "C" {
 #endif
         {
             Ogre3DApplication ogreapp;
-            ogreapp.Run();
-            //QtApplication qtapp (argc, argv);
+            QtApplication qtapp (argc, argv);
 
-            //RenderShim shim (qtapp.GetView(), ogreapp.GetView());
+            //ogreapp.Run();
+            RenderShim shim (qtapp.GetView(), ogreapp.GetView());
 
-            //return qtapp.exec();
+            return qtapp.exec();
         }
 
 #ifdef __cplusplus
