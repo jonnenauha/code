@@ -86,7 +86,6 @@ void WorldView::initialize_ ()
     Ogre::TextureUnitState *state 
         (material->getTechnique(0)->getPass(0)->createTextureUnitState());
 
-    //state-> setTextureName ("ui-big.png");
     state-> setTextureName ("test/texture/UI");
 
     material->getTechnique(0)->getPass(0)->setSceneBlending
@@ -105,10 +104,6 @@ void WorldView::initialize_ ()
 
     overlay-> add2D (static_cast <Ogre::OverlayContainer *> (container));
     overlay-> show ();
-
-    // set up compositor
-    //Ogre::CompositorManager::getSingleton().addCompositor (view_, "blackwhite");
-    //Ogre::CompositorManager::getSingleton().setCompositorEnabled (view_, "blackwhite", true);
 }
 
 WorldView::~WorldView ()
@@ -195,8 +190,13 @@ void WorldWindow::create_render_window_ ()
     params["parentWindowHandle"] = winhandle;
 #endif
 
+    QSize size (nativewin-> size());
+
+    QGraphicsView *view = static_cast <QGraphicsView *> (nativewin);
+    if (view) size = view-> viewport()-> size();
+
     win_ = Ogre::Root::getSingletonPtr()-> 
-        createRenderWindow ("View", nativewin-> width(), nativewin-> height(), false, &params);
+        createRenderWindow ("View", size.width(), size.height(), false, &params);
 
     // take over ogre window
     // needed with parent windows
@@ -334,8 +334,7 @@ RenderShim::RenderShim (QGraphicsView *uiview, WorldView *world) :
 
 void RenderShim::Update ()
 {
-    //QSize viewsize (uiview_-> viewport()-> size());
-    QSize viewsize (uiview_-> size());
+    QSize viewsize (uiview_-> viewport()-> size());
     QRect viewrect (QPoint (0, 0), viewsize);
 
     // compositing back buffer

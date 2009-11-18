@@ -84,18 +84,6 @@ class WorldWindow : public QWidget
         Ogre::RenderWindow *GetRenderWindow () { return win_; }
 
     public:
-        void paintEvent (QPaintEvent *e) { std::cout << "paintEvent" << std::endl; }
-        void resizeEvent (QResizeEvent *e) { std::cout << "resizeEvent" << std::endl; }
-		void closeEvent (QCloseEvent *event) { std::cout << "closeEvent" << std::endl; }
-		void keyPressEvent (QKeyEvent* event) { std::cout << "keyPressEvent" << std::endl; }
-		void keyReleaseEvent (QKeyEvent* event) { std::cout << "keyReleaseEvent" << std::endl; }
-		void mousePressEvent (QMouseEvent* event) { std::cout << "mousePressEvent" << std::endl; }
-		void mouseReleaseEvent (QMouseEvent* event) { std::cout << "mouseReleaseEvent" << std::endl; }
-		void mouseDoubleClickEvent (QMouseEvent* event) { std::cout << "mouseDoubleClickEvent" << std::endl; }
-		void mouseMoveEvent (QMouseEvent* event) { std::cout << "mouseMoveEvent" << std::endl; }
-		void wheelEvent (QWheelEvent* event) { std::cout << "wheelEvent" << std::endl; }
-
-    public:
         void create_render_window_ ();
 
         Ogre::RenderWindow      *win_;
