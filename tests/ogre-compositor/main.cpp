@@ -86,8 +86,8 @@ void WorldView::initialize_ ()
     Ogre::TextureUnitState *state 
         (material->getTechnique(0)->getPass(0)->createTextureUnitState());
 
-    state-> setTextureName ("ui-big.png");
-    //state-> setTextureName ("test/texture/UI");
+    //state-> setTextureName ("ui-big.png");
+    state-> setTextureName ("test/texture/UI");
 
     material->getTechnique(0)->getPass(0)->setSceneBlending
         (Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
@@ -132,19 +132,18 @@ void WorldView::OverlayUI (Ogre::PixelBox &ui)
 //=============================================================================
 //
 
-WorldWindow::WorldWindow (QWidget *parent) : 
+WorldWindow::WorldWindow (QGraphicsView *parent) : 
     QWidget (parent),
     win_ (0)
 {
+    parent-> setViewport (this);
+
     setUpdatesEnabled (false);
-    
     setAttribute (Qt::WA_PaintOnScreen);
     setAttribute (Qt::WA_PaintOutsidePaintEvent);
     setAttribute (Qt::WA_NoSystemBackground);
-    setFocusPolicy (Qt::StrongFocus);
     
     create_render_window_ ();
-    show ();
 }
 
 WorldWindow::~WorldWindow ()
@@ -228,7 +227,7 @@ bool WorldController::frameStarted (const Ogre::FrameEvent& evt)
 
 //=============================================================================
 
-Ogre3DApplication::Ogre3DApplication (QWidget *qview)
+Ogre3DApplication::Ogre3DApplication (QGraphicsView *qview)
 {
     root_ = OGRE_NEW Ogre::Root ();
 
@@ -329,13 +328,8 @@ QtApplication::QtApplication (int &argc, char **argv) :
 RenderShim::RenderShim (QGraphicsView *uiview, WorldView *world) : 
     uiview_ (uiview), worldview_ (world)
 {
-    //uiview_-> setUpdatesEnabled (false);
-    //uiview_-> viewport()-> setAttribute (Qt::WA_PaintOnScreen);
-    //uiview_-> viewport()-> setAttribute (Qt::WA_PaintOutsidePaintEvent);
-    //uiview_-> viewport()-> setAttribute (Qt::WA_NoSystemBackground);
-    //uiview_-> viewport()-> setFocusPolicy (Qt::StrongFocus);
-
     startTimer (20);
+    uiview_-> show ();
 }
 
 void RenderShim::Update ()
@@ -355,7 +349,7 @@ void RenderShim::Update ()
     Ogre::Box bounds (0, 0, viewsize.width(), viewsize.height());
     Ogre::PixelBox bufbox (bounds, Ogre::PF_A8R8G8B8, (void *) buffer.bits());
     
-    //worldview_-> OverlayUI (bufbox);
+    worldview_-> OverlayUI (bufbox);
     worldview_-> RenderOneFrame ();
 }
 
@@ -379,7 +373,7 @@ extern "C" {
 #endif
         {
             QtApplication qtapp (argc, argv);
-            Ogre3DApplication ogreapp; //(qtapp.GetView());
+            Ogre3DApplication ogreapp (qtapp.GetView());
             RenderShim shim (qtapp.GetView(), ogreapp.GetView());
 
             return qtapp.exec();

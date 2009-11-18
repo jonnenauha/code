@@ -75,8 +75,10 @@ class WorldView //: public Ogre::RenderTargetListener
 
 class WorldWindow : public QWidget
 {
+    Q_OBJECT
+
     public:
-        WorldWindow (QWidget *parent = 0);
+        WorldWindow (QGraphicsView *parent = 0);
         virtual ~WorldWindow ();
 
         Ogre::RenderWindow *GetRenderWindow () { return win_; }
@@ -103,7 +105,7 @@ class WorldWindow : public QWidget
 class Ogre3DApplication
 {
     public:
-        Ogre3DApplication (QWidget *window = 0);
+        Ogre3DApplication (QGraphicsView *window = 0);
         virtual ~Ogre3DApplication ();
 
         WorldModel *GetModel () { return model_; }
@@ -142,7 +144,7 @@ class QtApplication : public QApplication
         QGraphicsScene   *scene_;
 };
 
-class RenderShim : public QWidget
+class RenderShim : public QObject
 {
     Q_OBJECT
 
@@ -155,8 +157,6 @@ class RenderShim : public QWidget
         void timerEvent (QTimerEvent *e) { Update (); }
 
     private:
-        void create_render_window_ (QWidget *widget, WorldView *view);
-
         QGraphicsView           *uiview_;
         WorldView               *worldview_;
 };
