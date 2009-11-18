@@ -58,6 +58,8 @@ WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) :
     root_ = Ogre::Root::getSingletonPtr();
     texmgr_ = Ogre::TextureManager::getSingletonPtr();
 
+    int width (640), height (480);
+
     if (true)
     {
         // Create one viewport, entire window
@@ -69,9 +71,43 @@ WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) :
             (Real (view_-> getActualWidth()) / 
              Real (view_-> getActualHeight()));
 
+        // set up off-screen texture
+        Ogre::MaterialPtr material
+            (Ogre::MaterialManager::getSingleton().create
+             ("test/material/UI", 
+              Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
+
+        Ogre::TexturePtr texture
+            (Ogre::TextureManager::getSingleton().createManual
+             ("test/texture/UI",
+              Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
+              Ogre::TEX_TYPE_2D, width, height, 0, 
+              Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE));
+
+        Ogre::TextureUnitState *state 
+            (material->getTechnique(0)->getPass(0)->createTextureUnitState());
+        state-> setTextureName ("ui-big.png");
+
+        material->getTechnique(0)->getPass(0)->setSceneBlending
+            (Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
+
+        // set up overlays
+        Ogre::Overlay *overlay 
+            (Ogre::OverlayManager::getSingleton().create 
+             ("test/overlay/UI"));
+        
+        Ogre::OverlayElement *container
+            (Ogre::OverlayManager::getSingleton().createOverlayElement 
+             ("Panel", "test/overlay/UIPanel"));
+
+        container-> setMaterialName ("test/material/UI");
+
+        overlay-> add2D (static_cast <Ogre::OverlayContainer *> (container));
+        overlay-> show ();
+
         // set up compositor
-        Ogre::CompositorManager::getSingleton().addCompositor (view_, "blackwhite");
-        Ogre::CompositorManager::getSingleton().setCompositorEnabled (view_, "blackwhite", true);
+        //Ogre::CompositorManager::getSingleton().addCompositor (view_, "blackwhite");
+        //Ogre::CompositorManager::getSingleton().setCompositorEnabled (view_, "blackwhite", true);
     }
     else
     {
@@ -80,7 +116,7 @@ WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) :
 
         // TODO: unmap the empty window, as it's still displayed
     
-        create_render_texture_ (640, 480); // pick a safe resolution
+        create_render_texture_ (width, height); // pick a safe resolution
     }
 
 }

@@ -80,7 +80,7 @@ class WorldView //: public Ogre::RenderTargetListener
         
         void RenderOneFrame (Ogre::PixelBox &dst);
 
-        const char *GetRenderTargetName () { return "world-scene-off-screen-texture"; }
+        const char *GetRenderTargetName () { return "my-off-screen-texture"; }
 
     public:
 
