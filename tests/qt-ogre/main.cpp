@@ -41,11 +41,11 @@ Ogre::Root *render_setup (int width, int height)
             QString dimensions = QString ("%1x%2").arg (width).arg (height);
             renderSystem-> setConfigOption ("Video Mode", dimensions.toStdString());
 
-            // initialize without creating window
-            root-> getRenderSystem()-> setConfigOption("Full Screen", "No");
+            root-> getRenderSystem()-> setConfigOption ("Full Screen", "No");
             root-> saveConfig();
         }
 
+        // initialize without creating window
         root-> initialise (false);
 
         // Load resource paths from config file

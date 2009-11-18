@@ -44,50 +44,42 @@ class WorldController : public Ogre::FrameListener
         WorldController (WorldModel *model) 
             : model_ (model) {}
         
-        // rotate the plane
-        bool frameStarted (const Ogre::FrameEvent& evt)
-        {
-            model_-> planenode_-> yaw (Radian (evt.timeSinceLastFrame));
-
-            return Ogre::FrameListener::frameStarted (evt);
-        }
+        bool frameStarted (const Ogre::FrameEvent& evt);
 
     private:
         WorldModel          *model_;
 };
 
 
-class WindowController : public Ogre::WindowEventListener, public Ogre::FrameListener
+class WorldView //: public Ogre::RenderTargetListener
 {
-    public: 
-        WindowController (Ogre::RenderWindow *win);
-        virtual ~WindowController ();
-
-        virtual void windowClosed (Ogre::RenderWindow* rw);
-
-        bool frameStarted (const Ogre::FrameEvent& evt);
-        bool frameRenderingQueued (const Ogre::FrameEvent& evt);
-
-    private:
-        Ogre::RenderWindow   *win_;
-
-        OIS::InputManager   *inputman_;
-        OIS::Keyboard       *keyboard_;
-};
-
-
-class WorldView : public QWidget //: public Ogre::RenderTargetListener
-{
-    Q_OBJECT
-
     public:
         WorldView (WorldModel *model, Ogre::RenderWindow *win);
         virtual ~WorldView ();
-        
+
         void RenderOneFrame ();
         void OverlayUI (Ogre::PixelBox &ui);
 
-        const char *GetRenderTargetName () { return "test/texture/UI"; }
+    public:
+        void initialize_ ();
+
+        Ogre::Root              *root_;
+
+        Ogre::Viewport          *view_;
+        Ogre::RenderWindow      *win_;
+
+        Ogre::TexturePtr        ui_overlay_texture_;
+
+        WorldModel              *model_;
+};
+
+class WorldWindow : public QWidget
+{
+    public:
+        WorldWindow (QWidget *parent = 0);
+        virtual ~WorldWindow ();
+
+        Ogre::RenderWindow *GetRenderWindow () { return win_; }
 
     public:
         void paintEvent (QPaintEvent *e) { std::cout << "paintEvent" << std::endl; }
@@ -102,27 +94,16 @@ class WorldView : public QWidget //: public Ogre::RenderTargetListener
 		void wheelEvent (QWheelEvent* event) { std::cout << "wheelEvent" << std::endl; }
 
     public:
-
-        void create_render_texture_ (size_t width, size_t height);
-
-        void adjust_render_texture_to_pixel_box_ (Ogre::PixelBox &dst);
-
-        Ogre::Root              *root_;
-        Ogre::TextureManager    *texmgr_;
-
-        Ogre::TexturePtr        texture_;
+        void create_render_window_ ();
 
         Ogre::RenderWindow      *win_;
-        Ogre::Viewport          *view_;
-
-        WorldModel              *model_;
 };
 
 
 class Ogre3DApplication
 {
     public:
-        Ogre3DApplication ();
+        Ogre3DApplication (QWidget *window = 0);
         virtual ~Ogre3DApplication ();
 
         WorldModel *GetModel () { return model_; }
@@ -139,13 +120,11 @@ class Ogre3DApplication
         Ogre::Root          *root_;
         Ogre::Camera        *camera_;
         Ogre::SceneManager  *scenemgr_;
-        Ogre::RenderWindow  *win_;
 
         WorldModel          *model_;
         WorldController     *controller_;
         WorldView           *view_;
-
-        WindowController    *winctrl_;
+        WorldWindow         *win_;
 };
 
 class QtApplication : public QApplication
@@ -163,7 +142,7 @@ class QtApplication : public QApplication
         QGraphicsScene   *scene_;
 };
 
-class RenderShim : public QObject
+class RenderShim : public QWidget
 {
     Q_OBJECT
 
@@ -176,6 +155,8 @@ class RenderShim : public QObject
         void timerEvent (QTimerEvent *e) { Update (); }
 
     private:
+        void create_render_window_ (QWidget *widget, WorldView *view);
+
         QGraphicsView           *uiview_;
         WorldView               *worldview_;
 };

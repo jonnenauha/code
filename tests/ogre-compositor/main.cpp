@@ -51,76 +51,64 @@ WorldModel::~WorldModel ()
 //=============================================================================
 //
 
-WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) : 
+WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) :
     model_ (model), 
     win_ (win)
-{ 
+{
     root_ = Ogre::Root::getSingletonPtr();
-    texmgr_ = Ogre::TextureManager::getSingletonPtr();
+    initialize_ ();
+}
 
-    int width (1024), height (768); // safe size
+void WorldView::initialize_ ()
+{ 
+    // Create one viewport, entire window
+    view_ = win_-> addViewport (model_->camera_);
+    view_-> setBackgroundColour (ColourValue (0,0,0));
 
-    if (true)
-    {
-        // Create one viewport, entire window
-        view_ = win_-> addViewport (model_->camera_);
-        view_-> setBackgroundColour (ColourValue (0,0,0));
+    // Alter the camera aspect ratio to match the viewport
+    model_-> camera_-> setAspectRatio 
+        (Real (view_-> getActualWidth()) / 
+         Real (view_-> getActualHeight()));
 
-        // Alter the camera aspect ratio to match the viewport
-        model_-> camera_-> setAspectRatio 
-            (Real (view_-> getActualWidth()) / 
-             Real (view_-> getActualHeight()));
+    // set up off-screen texture
+    ui_overlay_texture_ =
+        Ogre::TextureManager::getSingleton().createManual
+        ("test/texture/UI",
+         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
+         Ogre::TEX_TYPE_2D, win_-> getWidth(), win_-> getHeight(), 0, 
+         Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-        // set up off-screen texture
-        texture_ =
-            Ogre::TextureManager::getSingleton().createManual
-             ("test/texture/UI",
-              Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
-              Ogre::TEX_TYPE_2D, width, height, 0, 
-              Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+    Ogre::MaterialPtr material
+        (Ogre::MaterialManager::getSingleton().create
+         ("test/material/UI", 
+          Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 
-        Ogre::MaterialPtr material
-            (Ogre::MaterialManager::getSingleton().create
-             ("test/material/UI", 
-              Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
+    Ogre::TextureUnitState *state 
+        (material->getTechnique(0)->getPass(0)->createTextureUnitState());
 
-        Ogre::TextureUnitState *state 
-            (material->getTechnique(0)->getPass(0)->createTextureUnitState());
+    //state-> setTextureName ("ui-big.png");
+    state-> setTextureName ("test/texture/UI");
 
-        //state-> setTextureName ("ui-big.png");
-        state-> setTextureName ("test/texture/UI");
+    material->getTechnique(0)->getPass(0)->setSceneBlending
+        (Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
 
-        material->getTechnique(0)->getPass(0)->setSceneBlending
-            (Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
+    // set up overlays
+    Ogre::Overlay *overlay 
+        (Ogre::OverlayManager::getSingleton().create 
+         ("test/overlay/UI"));
 
-        // set up overlays
-        Ogre::Overlay *overlay 
-            (Ogre::OverlayManager::getSingleton().create 
-             ("test/overlay/UI"));
-        
-        Ogre::OverlayElement *container
-            (Ogre::OverlayManager::getSingleton().createOverlayElement 
-             ("Panel", "test/overlay/UIPanel"));
+    Ogre::OverlayElement *container
+        (Ogre::OverlayManager::getSingleton().createOverlayElement 
+         ("Panel", "test/overlay/UIPanel"));
 
-        container-> setMaterialName ("test/material/UI");
+    container-> setMaterialName ("test/material/UI");
 
-        overlay-> add2D (static_cast <Ogre::OverlayContainer *> (container));
-        overlay-> show ();
+    overlay-> add2D (static_cast <Ogre::OverlayContainer *> (container));
+    overlay-> show ();
 
-        // set up compositor
-        //Ogre::CompositorManager::getSingleton().addCompositor (view_, "blackwhite");
-        //Ogre::CompositorManager::getSingleton().setCompositorEnabled (view_, "blackwhite", true);
-    }
-    else
-    {
-        // window render target can be removed
-        root_-> getRenderSystem()-> detachRenderTarget ("OGRE Render Window");
-
-        // TODO: unmap the empty window, as it's still displayed
-    
-        create_render_texture_ (width, height); // pick a safe resolution
-    }
-
+    // set up compositor
+    //Ogre::CompositorManager::getSingleton().addCompositor (view_, "blackwhite");
+    //Ogre::CompositorManager::getSingleton().setCompositorEnabled (view_, "blackwhite", true);
 }
 
 WorldView::~WorldView ()
@@ -137,125 +125,124 @@ void WorldView::RenderOneFrame ()
 
 void WorldView::OverlayUI (Ogre::PixelBox &ui)
 {
-    texture_-> getBuffer()-> blitFromMemory (ui);
-}
-
-void WorldView::create_render_texture_ (size_t width, size_t height)
-{
-    texmgr_-> remove (GetRenderTargetName());
-
-    // Create the off-screen RTT texture
-    texture_ = texmgr_-> 
-        createManual (GetRenderTargetName(), 
-                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 
-                width, height, 0, Ogre::PF_R8G8B8, Ogre::TU_RENDERTARGET); 
-
-    // Set up texture as RTT
-    Ogre::RenderTexture *rendertex (texture_-> getBuffer()-> getRenderTarget());
-    rendertex-> addViewport (model_-> camera_);
-    rendertex-> getViewport (0)-> setClearEveryFrame (true);
-    rendertex-> getViewport (0)-> setBackgroundColour (ColourValue::Black);
-    rendertex-> getViewport (0)-> setOverlaysEnabled (false);
-    //rendertex-> addListener (this); // this was used for the mini-view
-}
-
-void WorldView::adjust_render_texture_to_pixel_box_ (Ogre::PixelBox &dst)
-{
-    size_t width (dst.getWidth()), height (dst.getHeight());
-
-    if ((width != texture_-> getWidth()) || (height != texture_-> getHeight()))
-        create_render_texture_ (width, height);
+    ui_overlay_texture_-> getBuffer()-> blitFromMemory (ui);
 }
 
 
 //=============================================================================
-// WindowController
+//
 
-WindowController::WindowController (Ogre::RenderWindow *win) : 
-    win_ (win)
+WorldWindow::WorldWindow (QWidget *parent) : 
+    QWidget (parent)
 {
-    //Ogre::LogManager::getSingletonPtr()-> logMessage ("Initializing OIS");
-
-    //OIS::ParamList pl;
-    //std::ostringstream winidstr; size_t winid = 0;
-
-    //win-> getCustomAttribute ("WINDOW", &winid); winidstr << winid;
-    //pl.insert (std::make_pair (std::string ("WINDOW"), winidstr.str()));
-
-    //inputman_ = OIS::InputManager::createInputSystem (pl);
-    //keyboard_ = static_cast <OIS::Keyboard*> (inputman_-> createInputObject (OIS::OISKeyboard, false));
-
-    Ogre::WindowEventUtilities::addWindowEventListener (win_, this);
+    create_render_window_ ();
 }
 
-WindowController::~WindowController ()
+WorldWindow::~WorldWindow ()
 {
-    Ogre::WindowEventUtilities::removeWindowEventListener (win_, this);
-    windowClosed (win_);
 }
 
-void WindowController::windowClosed (Ogre::RenderWindow* rw)
+void WorldWindow::create_render_window_ ()
 {
-    //if ((rw == win_) && (inputman_))
-    //{
-    //    inputman_-> destroyInputObject (keyboard_);
-    //    OIS::InputManager::destroyInputSystem (inputman_);
-    //    inputman_ = 0;
-    //}
+    bool stealparent 
+        ((parentWidget())? true : false);
+
+    QWidget *nativewin 
+        ((stealparent)? parentWidget() : this);
+
+    Ogre::NameValuePairList params;
+    Ogre::String winhandle;
+
+#ifdef Q_WS_WIN
+    // According to Ogre Docs
+    // positive integer for W32 (HWND handle)
+    winhandle = Ogre::StringConverter::toString 
+        ((unsigned int) 
+         (nativewin-> winId ()));
+
+    //Add the external window handle parameters to the existing params set.
+    params["externalWindowHandle"] = winhandle;
+#endif
+
+#ifdef Q_WS_X11
+    // GLX - According to Ogre Docs:
+    // poslong:posint:poslong:poslong (display*:screen:windowHandle:XVisualInfo*)
+    QX11Info info =  x11Info ();
+
+    winhandle  = Ogre::StringConverter::toString 
+        ((unsigned long)
+         (info.display ()));
+    winhandle += ":";
+
+    winhandle += Ogre::StringConverter::toString 
+        ((unsigned int)
+         (info.screen ()));
+    winhandle += ":";
+    
+    winhandle += Ogre::StringConverter::toString 
+        ((unsigned long)
+         nativewin-> winId());
+
+    //Add the external window handle parameters to the existing params set.
+    params["parentWindowHandle"] = winhandle;
+#endif
+
+    win_ = Ogre::Root::getSingletonPtr()-> createRenderWindow 
+        ("View", nativewin-> width(), nativewin-> height(), false, &params);
+
+    // take over ogre window
+    // needed with parent windows
+    if (stealparent)
+    {
+        WId ogre_winid = 0x0;
+#ifndef Q_WS_WIN
+        win_-> getCustomAttribute ("WINDOW", &ogre_winid);
+#else
+        win_-> getCustomAttribute ("HWND", &ogre_winid);
+#endif
+        assert (ogre_winid);
+        create (ogre_winid);
+    }
 }
 
-bool WindowController::frameStarted (const Ogre::FrameEvent& evt)
+
+//=============================================================================
+// rotate the plane on every frame
+
+bool WorldController::frameStarted (const Ogre::FrameEvent& evt)
 {
-    static int count = 0; ++ count;
-    return (count < 5000); // quit after 100 frames always
+    model_-> planenode_-> yaw (Radian (evt.timeSinceLastFrame));
+
+    return Ogre::FrameListener::frameStarted (evt);
 }
 
-bool WindowController::frameRenderingQueued (const Ogre::FrameEvent& evt)
-{
-    if (win_-> isClosed()) return false;
-
-    //keyboard_-> capture();
-
-    //if (!keyboard_-> buffered())
-    //    if (keyboard_-> isKeyDown (OIS::KC_ESCAPE) || 
-    //            keyboard_-> isKeyDown (OIS::KC_Q))
-    //        return false;
-
-    return true;
-}
 
 //=============================================================================
 
-Ogre3DApplication::Ogre3DApplication ()
+Ogre3DApplication::Ogre3DApplication (QWidget *qview)
 {
     root_ = OGRE_NEW Ogre::Root ();
 
     setup_resources ();
     root_-> restoreConfig();
 
-    win_ = root_-> initialise (true);
+    root_-> initialise (false);
+    win_ = new WorldWindow (qview);
 
-    scenemgr_ = root_-> createSceneManager (Ogre::ST_GENERIC, "SceneManager");
+    scenemgr_ = root_-> createSceneManager 
+        (Ogre::ST_GENERIC, "SceneManager");
 
-    Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+    Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups ();
 
     model_ = new WorldModel (scenemgr_);
-    view_ = new WorldView (model_, win_);
     controller_ = new WorldController (model_);
-    winctrl_ = new WindowController (win_);
+    view_ = new WorldView (model_, win_-> GetRenderWindow());
 
     root_-> addFrameListener (controller_);
-    root_-> addFrameListener (winctrl_);
-
-    // show available render targets
-    Ogre::RenderSystem::RenderTargetIterator it (root_->getRenderSystem()->getRenderTargetIterator());
-    while (it.hasMoreElements())
-    	std::cout << "Render Target: " << it.getNext()-> getName() << std::endl;
 }
 
 Ogre3DApplication::~Ogre3DApplication ()
 {
-    delete winctrl_;
     delete controller_;
     delete view_;
     delete model_;
@@ -334,12 +321,14 @@ QtApplication::QtApplication (int &argc, char **argv) :
 RenderShim::RenderShim (QGraphicsView *uiview, WorldView *world) : 
     uiview_ (uiview), worldview_ (world)
 {
-    startTimer (20);
     uiview_-> setUpdatesEnabled (false);
     uiview_-> viewport()-> setAttribute (Qt::WA_PaintOnScreen);
     uiview_-> viewport()-> setAttribute (Qt::WA_PaintOutsidePaintEvent);
     uiview_-> viewport()-> setAttribute (Qt::WA_NoSystemBackground);
+    uiview_-> viewport()-> setFocusPolicy (Qt::StrongFocus);
     uiview_-> resize (1024, 768);
+
+    startTimer (20);
 }
 
 void RenderShim::Update ()
