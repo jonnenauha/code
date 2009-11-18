@@ -224,9 +224,7 @@ bool WindowController::frameRenderingQueued (const Ogre::FrameEvent& evt)
     return true;
 }
 
-
 //=============================================================================
-//
 
 Ogre3DApplication::Ogre3DApplication ()
 {
@@ -385,8 +383,8 @@ extern "C" {
         int main(int argc, char **argv)
 #endif
         {
-            Ogre3DApplication ogreapp;
             QtApplication qtapp (argc, argv);
+            Ogre3DApplication ogreapp;
 
             //ogreapp.Run();
             RenderShim shim (qtapp.GetView(), ogreapp.GetView());

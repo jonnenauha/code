@@ -5,6 +5,10 @@
 #include <QtGui>
 #include <QThread>
 
+#ifndef Q_WS_WIN
+#include <QX11Info>
+#endif
+
 #include <Ogre.h>
 #include <OgreConfigFile.h>
 #include <OIS/OIS.h>
@@ -72,8 +76,10 @@ class WindowController : public Ogre::WindowEventListener, public Ogre::FrameLis
 };
 
 
-class WorldView //: public Ogre::RenderTargetListener
+class WorldView : public QWidget //: public Ogre::RenderTargetListener
 {
+    Q_OBJECT
+
     public:
         WorldView (WorldModel *model, Ogre::RenderWindow *win);
         virtual ~WorldView ();
@@ -82,6 +88,18 @@ class WorldView //: public Ogre::RenderTargetListener
         void OverlayUI (Ogre::PixelBox &ui);
 
         const char *GetRenderTargetName () { return "test/texture/UI"; }
+
+    public:
+        void paintEvent (QPaintEvent *e) { std::cout << "paintEvent" << std::endl; }
+        void resizeEvent (QResizeEvent *e) { std::cout << "resizeEvent" << std::endl; }
+		void closeEvent (QCloseEvent *event) { std::cout << "closeEvent" << std::endl; }
+		void keyPressEvent (QKeyEvent* event) { std::cout << "keyPressEvent" << std::endl; }
+		void keyReleaseEvent (QKeyEvent* event) { std::cout << "keyReleaseEvent" << std::endl; }
+		void mousePressEvent (QMouseEvent* event) { std::cout << "mousePressEvent" << std::endl; }
+		void mouseReleaseEvent (QMouseEvent* event) { std::cout << "mouseReleaseEvent" << std::endl; }
+		void mouseDoubleClickEvent (QMouseEvent* event) { std::cout << "mouseDoubleClickEvent" << std::endl; }
+		void mouseMoveEvent (QMouseEvent* event) { std::cout << "mouseMoveEvent" << std::endl; }
+		void wheelEvent (QWheelEvent* event) { std::cout << "wheelEvent" << std::endl; }
 
     public:
 
@@ -130,72 +148,6 @@ class Ogre3DApplication
         WindowController    *winctrl_;
 };
 
-
-class RedirectedGraphicsView : public QGraphicsView
-{
-    Q_OBJECT
-
-    public:
-
-        void Render (QPainter &painter, QRect &target)
-        {
-            painter.drawImage (target, *backbuffer_); // should map 1-1??
-        }
-
-        void CleanUsedBuffers ()
-        {
-            std::list<QImage *>::iterator it (used_buffers_.begin());
-            for (; it != used_buffers_.end(); ++it)
-                delete *it;
-        }
-
-    protected:
-
-        void resizeEvent (QResizeEvent *e)
-        {
-            QGraphicsView::resizeEvent (e);
-
-            QSize maxsize = (backbuffer_)? 
-                viewport()-> size().expandedTo (backbuffer_-> size()) : 
-                viewport()-> size();
-
-            if (backbuffer_ && (backbuffer_-> size() != maxsize))
-            {
-                used_buffers_.push_back (backbuffer_);
-                backbuffer_ = NULL;
-            }
-                
-            if (!backbuffer_)
-                backbuffer_ = new QImage (maxsize, QImage::Format_ARGB32);
-        }
-        
-        void paintEvent (QPaintEvent *e)
-        {
-            QRect exposed (e-> region().boundingRect());
-            QRectF bufexposed (exposed); // buffer should map 1-1??
-
-            // paint to back buffer
-            QPainter painter (backbuffer_);
-            
-            // clean previously dirty rect
-            //painter.fillRect (dirty_, Qt::transparent);
-            backbuffer_-> fill (Qt::transparent);
-
-            // draw new exposed rect
-            QGraphicsView::render (&painter, bufexposed, exposed);
-            
-            // store this expose
-            dirty_ = exposed;
-        }
-
-    private:
-
-        QImage     *backbuffer_;
-        QRect       dirty_;
-
-        std::list <QImage *> used_buffers_;
-};
-
 class QtApplication : public QApplication
 {
     Q_OBJECT
@@ -203,13 +155,10 @@ class QtApplication : public QApplication
     public:
         QtApplication (int &argc, char **argv);
 
-        //RedirectedGraphicsView *GetView () { return view_; }
         QGraphicsView *GetView () { return view_; }
         QGraphicsScene *GetScene () { return scene_; }
 
     private:
-
-        //RedirectedGraphicsView  *view_;
         QGraphicsView   *view_;
         QGraphicsScene   *scene_;
 };
@@ -227,7 +176,6 @@ class RenderShim : public QObject
         void timerEvent (QTimerEvent *e) { Update (); }
 
     private:
-        //RedirectedGraphicsView           *uiview_;
         QGraphicsView           *uiview_;
         WorldView               *worldview_;
 };
