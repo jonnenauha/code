@@ -127,25 +127,37 @@ void WorldView::OverlayUI (Ogre::PixelBox &ui)
 //=============================================================================
 //
 
-WorldWindow::WorldWindow (QGraphicsView *parent) : 
-    QWidget (parent),
+QOgreUIView::QOgreUIView () :
+    QGraphicsView (),
     win_ (0)
 {
-    parent-> setViewport (this);
+    initialize_ ();
+}
 
+QOgreUIView::QOgreUIView (QGraphicsScene *scene) : 
+    QGraphicsView (scene),
+    win_ (0)
+{
+    initialize_ ();
+}
+
+QOgreUIView::~QOgreUIView ()
+{
+}
+
+void QOgreUIView::initialize_ ()
+{
     setUpdatesEnabled (false);
     setAttribute (Qt::WA_PaintOnScreen);
     setAttribute (Qt::WA_PaintOutsidePaintEvent);
     setAttribute (Qt::WA_NoSystemBackground);
-    
-    create_render_window_ ();
-}
+    setFocusPolicy (Qt::StrongFocus);
 
-WorldWindow::~WorldWindow ()
-{
-}
+    resize (1024, 768);
+    show ();
+}    
 
-void WorldWindow::create_render_window_ ()
+Ogre::RenderWindow *QOgreUIView::CreateRenderWindow ()
 {
     bool stealparent 
         ((parentWidget())? true : false);
@@ -211,6 +223,14 @@ void WorldWindow::create_render_window_ ()
         assert (ogre_winid);
         create (ogre_winid);
     }
+
+    return win_;
+}
+
+void QOgreUIView::resizeEvent (QResizeEvent *e)
+{
+    cout << "I'm resized" << endl;
+    QGraphicsView::resizeEvent (e);
 }
 
 
@@ -227,7 +247,7 @@ bool WorldController::frameStarted (const Ogre::FrameEvent& evt)
 
 //=============================================================================
 
-Ogre3DApplication::Ogre3DApplication (QGraphicsView *qview)
+Ogre3DApplication::Ogre3DApplication (QOgreUIView *uiview)
 {
     root_ = OGRE_NEW Ogre::Root ();
 
@@ -235,16 +255,15 @@ Ogre3DApplication::Ogre3DApplication (QGraphicsView *qview)
     root_-> restoreConfig();
 
     root_-> initialise (false);
-    win_ = new WorldWindow (qview);
+    win_ = uiview-> CreateRenderWindow ();
 
-    scenemgr_ = root_-> createSceneManager 
-        (Ogre::ST_GENERIC, "SceneManager");
+    scenemgr_ = root_-> createSceneManager (Ogre::ST_GENERIC, "SceneManager");
 
-    Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups ();
+    Ogre::ResourceGroupManager::getSingleton().  initialiseAllResourceGroups ();
 
     model_ = new WorldModel (scenemgr_);
     controller_ = new WorldController (model_);
-    view_ = new WorldView (model_, win_-> GetRenderWindow());
+    view_ = new WorldView (model_, win_);
 
     root_-> addFrameListener (controller_);
 }
@@ -288,7 +307,7 @@ void Ogre3DApplication::setup_resources ()
 QtApplication::QtApplication (int &argc, char **argv) : 
     QApplication (argc, argv)
 {
-    view_ = new QGraphicsView ();
+    view_ = new QOgreUIView ();
     scene_ = new QGraphicsScene ();
 
     QDialog *dialog1 = new QDialog ();
@@ -325,14 +344,13 @@ QtApplication::QtApplication (int &argc, char **argv) :
 //=============================================================================
 //
 
-RenderShim::RenderShim (QGraphicsView *uiview, WorldView *world) : 
+QOgreRenderShim::QOgreRenderShim (QGraphicsView *uiview, WorldView *world) : 
     uiview_ (uiview), worldview_ (world)
 {
     startTimer (20);
-    uiview_-> show ();
 }
 
-void RenderShim::Update ()
+void QOgreRenderShim::Update ()
 {
     QSize viewsize (uiview_-> viewport()-> size());
     QRect viewrect (QPoint (0, 0), viewsize);
@@ -373,7 +391,7 @@ extern "C" {
         {
             QtApplication qtapp (argc, argv);
             Ogre3DApplication ogreapp (qtapp.GetView());
-            RenderShim shim (qtapp.GetView(), ogreapp.GetView());
+            QOgreRenderShim shim (qtapp.GetView(), ogreapp.GetView());
 
             return qtapp.exec();
         }

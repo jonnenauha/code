@@ -51,7 +51,7 @@ class WorldController : public Ogre::FrameListener
 };
 
 
-class WorldView //: public Ogre::RenderTargetListener
+class WorldView
 {
     public:
         WorldView (WorldModel *model, Ogre::RenderWindow *win);
@@ -60,7 +60,7 @@ class WorldView //: public Ogre::RenderTargetListener
         void RenderOneFrame ();
         void OverlayUI (Ogre::PixelBox &ui);
 
-    public:
+    private:
         void initialize_ ();
 
         Ogre::Root              *root_;
@@ -73,18 +73,24 @@ class WorldView //: public Ogre::RenderTargetListener
         WorldModel              *model_;
 };
 
-class WorldWindow : public QWidget
+class QOgreUIView : public QGraphicsView
 {
     Q_OBJECT
 
     public:
-        WorldWindow (QGraphicsView *parent = 0);
-        virtual ~WorldWindow ();
+        QOgreUIView ();
+        QOgreUIView (QGraphicsScene *scene);
 
+        virtual ~QOgreUIView ();
+
+        Ogre::RenderWindow *CreateRenderWindow ();
         Ogre::RenderWindow *GetRenderWindow () { return win_; }
 
-    public:
-        void create_render_window_ ();
+    protected:
+        void resizeEvent (QResizeEvent *e);
+
+    private:
+        void initialize_ ();
 
         Ogre::RenderWindow      *win_;
 };
@@ -93,11 +99,9 @@ class WorldWindow : public QWidget
 class Ogre3DApplication
 {
     public:
-        Ogre3DApplication (QGraphicsView *window = 0);
+        Ogre3DApplication (QOgreUIView *window);
         virtual ~Ogre3DApplication ();
 
-        WorldModel *GetModel () { return model_; }
-        WorldController *GetController () { return controller_; }
         WorldView *GetView () { return view_; }
 
         void Run () { root_-> startRendering(); }
@@ -110,11 +114,11 @@ class Ogre3DApplication
         Ogre::Root          *root_;
         Ogre::Camera        *camera_;
         Ogre::SceneManager  *scenemgr_;
+        Ogre::RenderWindow  *win_;
 
         WorldModel          *model_;
         WorldController     *controller_;
         WorldView           *view_;
-        WorldWindow         *win_;
 };
 
 class QtApplication : public QApplication
@@ -124,20 +128,19 @@ class QtApplication : public QApplication
     public:
         QtApplication (int &argc, char **argv);
 
-        QGraphicsView *GetView () { return view_; }
-        QGraphicsScene *GetScene () { return scene_; }
+        QOgreUIView *GetView () { return view_; }
 
     private:
-        QGraphicsView   *view_;
-        QGraphicsScene   *scene_;
+        QOgreUIView     *view_;
+        QGraphicsScene  *scene_;
 };
 
-class RenderShim : public QObject
+class QOgreRenderShim : public QObject
 {
     Q_OBJECT
 
     public:
-        RenderShim (QGraphicsView *uiview, WorldView *world);
+        QOgreRenderShim (QGraphicsView *uiview, WorldView *world);
 
         void Update ();
 
