@@ -168,9 +168,6 @@ void QOgreUIView::initialize_ ()
 
     setFocusPolicy (Qt::StrongFocus);
     setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
-
-    resize (1024, 768);
-    show ();
 }    
 
 Ogre::RenderWindow *QOgreUIView::CreateRenderWindow ()
@@ -355,6 +352,7 @@ QtApplication::QtApplication (int &argc, char **argv) :
     item2-> setPos (50, 50);
 
     view_-> resize (1024, 768);
+    view_-> show ();
 }
 
 //=============================================================================
