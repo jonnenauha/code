@@ -57,6 +57,8 @@ class WorldView
         WorldView (WorldModel *model, Ogre::RenderWindow *win);
         virtual ~WorldView ();
 
+        void Resize (int width, int height);
+
         void RenderOneFrame ();
         void OverlayUI (Ogre::PixelBox &ui);
 
@@ -69,6 +71,8 @@ class WorldView
         Ogre::RenderWindow      *win_;
 
         Ogre::TexturePtr        ui_overlay_texture_;
+        Ogre::Overlay           *ui_overlay_;
+        Ogre::OverlayElement    *ui_overlay_container_;
 
         WorldModel              *model_;
 };
@@ -80,11 +84,10 @@ class QOgreUIView : public QGraphicsView
     public:
         QOgreUIView ();
         QOgreUIView (QGraphicsScene *scene);
-
         virtual ~QOgreUIView ();
 
+        void SetWorldView (WorldView *view) { view_ = view; }
         Ogre::RenderWindow *CreateRenderWindow ();
-        Ogre::RenderWindow *GetRenderWindow () { return win_; }
 
     protected:
         void resizeEvent (QResizeEvent *e);
@@ -92,7 +95,7 @@ class QOgreUIView : public QGraphicsView
     private:
         void initialize_ ();
 
-        Ogre::RenderWindow      *win_;
+        WorldView   *view_;
 };
 
 

@@ -92,22 +92,36 @@ void WorldView::initialize_ ()
         (Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
 
     // set up overlays
-    Ogre::Overlay *overlay 
+    ui_overlay_ = 
         (Ogre::OverlayManager::getSingleton().create 
          ("test/overlay/UI"));
 
-    Ogre::OverlayElement *container
+    ui_overlay_container_ =
         (Ogre::OverlayManager::getSingleton().createOverlayElement 
          ("Panel", "test/overlay/UIPanel"));
 
-    container-> setMaterialName ("test/material/UI");
+    ui_overlay_container_-> setMaterialName ("test/material/UI");
 
-    overlay-> add2D (static_cast <Ogre::OverlayContainer *> (container));
-    overlay-> show ();
+    ui_overlay_-> add2D (static_cast <Ogre::OverlayContainer *> (ui_overlay_container_));
+    ui_overlay_-> show ();
 }
 
 WorldView::~WorldView ()
 {
+}
+
+void WorldView::Resize (int width, int height)
+{
+    if (win_ && Ogre::TextureManager::getSingletonPtr())
+    {
+        ui_overlay_texture_-> freeInternalResources ();
+        ui_overlay_texture_-> setWidth (width);
+        ui_overlay_texture_-> setHeight (height);
+        ui_overlay_texture_-> createInternalResources ();
+
+        win_-> resize (width, height);
+        win_-> windowMovedOrResized ();
+    }
 }
 
 void WorldView::RenderOneFrame ()
@@ -129,14 +143,14 @@ void WorldView::OverlayUI (Ogre::PixelBox &ui)
 
 QOgreUIView::QOgreUIView () :
     QGraphicsView (),
-    win_ (0)
+    view_ (0)
 {
     initialize_ ();
 }
 
 QOgreUIView::QOgreUIView (QGraphicsScene *scene) : 
     QGraphicsView (scene),
-    win_ (0)
+    view_ (0)
 {
     initialize_ ();
 }
@@ -151,7 +165,9 @@ void QOgreUIView::initialize_ ()
     setAttribute (Qt::WA_PaintOnScreen);
     setAttribute (Qt::WA_PaintOutsidePaintEvent);
     setAttribute (Qt::WA_NoSystemBackground);
+
     setFocusPolicy (Qt::StrongFocus);
+    setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
 
     resize (1024, 768);
     show ();
@@ -207,7 +223,7 @@ Ogre::RenderWindow *QOgreUIView::CreateRenderWindow ()
     QGraphicsView *view = static_cast <QGraphicsView *> (nativewin);
     if (view) size = view-> viewport()-> size();
 
-    win_ = Ogre::Root::getSingletonPtr()-> 
+    Ogre::RenderWindow *window = Ogre::Root::getSingletonPtr()-> 
         createRenderWindow ("View", size.width(), size.height(), false, &params);
 
     // take over ogre window
@@ -216,21 +232,21 @@ Ogre::RenderWindow *QOgreUIView::CreateRenderWindow ()
     {
         WId ogre_winid = 0x0;
 #ifndef Q_WS_WIN
-        win_-> getCustomAttribute ("WINDOW", &ogre_winid);
+        window-> getCustomAttribute ("WINDOW", &ogre_winid);
 #else
-        win_-> getCustomAttribute ("HWND", &ogre_winid);
+        window-> getCustomAttribute ("HWND", &ogre_winid);
 #endif
         assert (ogre_winid);
         create (ogre_winid);
     }
 
-    return win_;
+    return window;
 }
 
 void QOgreUIView::resizeEvent (QResizeEvent *e)
 {
-    cout << "I'm resized" << endl;
     QGraphicsView::resizeEvent (e);
+    if (view_) view_-> Resize (viewport()-> width(), viewport()-> height());
 }
 
 
@@ -265,6 +281,7 @@ Ogre3DApplication::Ogre3DApplication (QOgreUIView *uiview)
     controller_ = new WorldController (model_);
     view_ = new WorldView (model_, win_);
 
+    uiview-> SetWorldView (view_);
     root_-> addFrameListener (controller_);
 }
 
@@ -326,7 +343,6 @@ QtApplication::QtApplication (int &argc, char **argv) :
     scene_-> addWidget (dialog1);
     scene_-> addWidget (dialog2);
     view_-> setScene (scene_);
-    view_-> setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
 
     QGraphicsItem *item1 (view_-> items().takeAt (0));
     item1-> setFlag (QGraphicsItem::ItemIsMovable);
