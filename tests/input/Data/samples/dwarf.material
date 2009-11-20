@@ -1,0 +1,13 @@
+material Material1
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture dwarf.jpg
+			}
+		}
+	}
+}
