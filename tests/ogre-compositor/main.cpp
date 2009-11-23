@@ -172,10 +172,10 @@ QOgreUIView::~QOgreUIView ()
 
 void QOgreUIView::initialize_ ()
 {
-    setUpdatesEnabled (false);
-    setAttribute (Qt::WA_PaintOnScreen);
-    setAttribute (Qt::WA_PaintOutsidePaintEvent);
-    setAttribute (Qt::WA_NoSystemBackground);
+    //setUpdatesEnabled (false);
+    //setAttribute (Qt::WA_PaintOnScreen);
+    //setAttribute (Qt::WA_PaintOutsidePaintEvent);
+    //setAttribute (Qt::WA_NoSystemBackground);
 
     setFocusPolicy (Qt::StrongFocus);
     setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
