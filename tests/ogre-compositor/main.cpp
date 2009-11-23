@@ -49,6 +49,17 @@ WorldModel::~WorldModel ()
 
 
 //=============================================================================
+// rotate the plane on every frame
+
+bool WorldController::frameStarted (const Ogre::FrameEvent& evt)
+{
+    model_-> planenode_-> yaw (Radian (evt.timeSinceLastFrame));
+
+    return Ogre::FrameListener::frameStarted (evt);
+}
+
+
+//=============================================================================
 //
 
 WorldView::WorldView (WorldModel *model, Ogre::RenderWindow *win) :
@@ -244,17 +255,6 @@ void QOgreUIView::resizeEvent (QResizeEvent *e)
 {
     QGraphicsView::resizeEvent (e);
     if (view_) view_-> Resize (viewport()-> width(), viewport()-> height());
-}
-
-
-//=============================================================================
-// rotate the plane on every frame
-
-bool WorldController::frameStarted (const Ogre::FrameEvent& evt)
-{
-    model_-> planenode_-> yaw (Radian (evt.timeSinceLastFrame));
-
-    return Ogre::FrameListener::frameStarted (evt);
 }
 
 
