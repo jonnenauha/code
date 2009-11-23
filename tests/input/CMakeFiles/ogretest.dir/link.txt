@@ -1,1 +1,0 @@
-/usr/lib/ccache/c++   -g  -fPIC CMakeFiles/ogretest.dir/main.cpp.o  -o ogretest -rdynamic -lOgreMain -lOIS -lQtGui_debug -lpng -lSM -lICE -lXi -lXrender -lXrandr -lXcursor -lXinerama -lXfixes -lfreetype -lfontconfig -lXext -lX11 -lm -lQtCore_debug -lz -lgthread-2.0 -lglib-2.0 -lrt -lpthread -ldl 
