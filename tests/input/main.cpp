@@ -4,8 +4,8 @@
  */
 
 #include <QtGui>
-#include <OGRE/Ogre.h>
-#include <OIS/OIS.h>
+#include <Ogre.h>
+#include <OIS.h>
 
 #include <iostream>
 #include <cstring>
