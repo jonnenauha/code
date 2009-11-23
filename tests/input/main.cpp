@@ -187,28 +187,70 @@ class KeyStateMachine : public QWidget
         KeyStateMachine ()
         {
             state.reserve (10); // we presume users only have 10 fingers
-
-            startTimer (1000);
+            startTimer (10);
         }
 
-        const std::vector<KeyState> &GetState () { return state; }
+        char KeyToAscii (const KeyState &k)
+        {
+            if ((k.key > 31) && (k.key < 127))
+            { // ASCII
+                char c (k.key);
+                if ((c > 64) && (c < 91)) // upper
+                    if (!(k.modifiers & 0x02000000))
+                        c |= 0x20; // to lower
+                return c;
+            }
+            else return 0;
+        }
 
+        KeyState AsciiToKey (char c)
+        {
+            KeyState k;
+            if ((c > 31) && (c < 127))
+            { // printable characters
+                if ((c > 64) && (c < 91)) // upper
+                    k.modifiers |= 0x02000000;
+
+                if ((c > 97) && (c < 123)) // lower
+                    c &= 0xdf; // to upper
+            }
+            return k;
+        }
+
+        const std::vector<KeyState> &GetState () 
+        { 
+            return state; 
+        }
+
+        const std::vector<char> GetCharState () 
+        { 
+            std::vector <char> charstate;
+
+            std::vector <KeyState>::iterator i (state.begin());
+            for (; i != state.end(); ++i)
+                charstate.push_back (KeyToAscii (*i));
+
+            return charstate; 
+        }
+
+        bool IsKeyDown (const KeyState &key) { return is_key_pressed_ (key); }
         bool IsKeyDown (int key) { return is_key_pressed_ (KeyState (key, 0)); }
 
     protected:
         void timerEvent (QTimerEvent *e)
         {
-            cout << "---" << endl;
+            cout << "--- key state ---" << endl;
             std::vector <KeyState>::iterator i (state.begin());
             for (; i != state.end(); ++i)
             {
                 int k = i-> key;
+                char c (KeyToAscii (*i));
 
                 cout << "* state: " << " key: "; 
-                if (k >= 65 && k <= 90) // ASCII
-                    cout << (char)(k);
-                else
-                    cout << k;
+
+                if (c) cout << c;
+                else cout << i-> key;
+
                 cout << " modifiers: " << i-> modifiers << endl;
             }
         }
@@ -216,20 +258,17 @@ class KeyStateMachine : public QWidget
         void keyPressEvent (QKeyEvent *e)
         {
             KeyState key (e);
-
-            assert (!is_key_pressed_ (key));
             press_key_ (key);
         }
         
         void keyReleaseEvent (QKeyEvent *e)
         {
             KeyState key (e);
-
-            assert (is_key_pressed_ (key));
             release_key_ (key);
         }
 
     private:
+
         bool is_key_pressed_ (const KeyState &k)
         {
             return (std::find (state.begin(), state.end(), k) != state.end());
