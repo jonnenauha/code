@@ -4,8 +4,15 @@ cmake_minimum_required (VERSION 2.6)
 include (FindQt4)
 find_package (Qt4 4.5 COMPONENTS QtCore QtGui REQUIRED)
 find_package (PkgConfig)
-pkg_check_modules (OIS OIS)
-pkg_check_modules (OGRE OGRE)
+
+if (MSVC)
+    set (OGRE_INCLUDE_DIRS "C:/OgreSDK/include")
+    set (OGRE_LIBRARY_DIRS "C:/OgreSDK/lib")
+else ()
+    pkg_check_modules (OIS OIS)
+    pkg_check_modules (OGRE OGRE)
+endif ()
+
 
 if (NOT QT4_FOUND)
     message (FATAL_ERROR "Qt4 not found")
