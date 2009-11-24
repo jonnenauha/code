@@ -48,4 +48,5 @@ qt4_generate_moc (main.h main_moc.cpp)
 
 add_executable (ogretest main_moc.cpp main.cpp)
     
-target_link_libraries (ogretest ${OGRE_LIBRARIES} ${OIS_LIBRARIES} ${QT_LIBRARIES})
+target_link_libraries (ogretest ${OGRE_LIBRARIES} ${OIS_LIBRARIES} ${QT_LIBRARIES} 
+    debug ${OGRE_DEBUG_LIBRARIES} ${OIS_DEBUG_LIBRARIES})
