@@ -1,6 +1,8 @@
 project (ogretest)
 cmake_minimum_required (VERSION 2.6)
 
+include (../../sagase-cmake/Sagase.cmake)
+
 include (FindQt4)
 find_package (Qt4 4.5 COMPONENTS QtCore QtGui REQUIRED)
 
@@ -10,9 +12,19 @@ endif (NOT QT4_FOUND)
 
 include(${QT_USE_FILE})
 
-find_package (PkgConfig)
-pkg_check_modules (OIS OIS)
-pkg_check_modules (OGRE OGRE)
+sagase_configure_package (OGRE 
+    NAMES Ogre OgreSDK ogre OGRE
+    COMPONENTS Ogre ogre OGRE OgreMain 
+    PREFIXES ${ENV_OGRE_HOME})
+
+
+sagase_configure_package (OIS 
+    NAMES Ois ois OIS 
+    COMPONENTS OIS
+    PREFIXES ${OIS_HOME})
+    
+sagase_configure_report (OGRE) 
+sagase_configure_report (OIS)
 
 # manually use custom ogre
 #set (OGRE_INCLUDE_DIRS ../ogre/build)

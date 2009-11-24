@@ -16,7 +16,7 @@ sagase_configure_package (OGRE
 sagase_configure_package (OIS 
     NAMES Ois ois OIS 
     COMPONENTS OIS
-    PREFIXES "C:/OIS_SDK")
+    PREFIXES ${OIS_HOME})
     
 sagase_configure_report (OGRE) 
 sagase_configure_report (OIS)

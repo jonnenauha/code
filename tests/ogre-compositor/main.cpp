@@ -262,7 +262,7 @@ void QOgreUIView::resizeEvent (QResizeEvent *e)
 
 Ogre3DApplication::Ogre3DApplication (QOgreUIView *uiview)
 {
-    root_ = OGRE_NEW Ogre::Root ();
+    root_ = new Ogre::Root ();
 
     setup_resources ();
     root_-> restoreConfig();
@@ -288,7 +288,7 @@ Ogre3DApplication::~Ogre3DApplication ()
     delete view_;
     delete model_;
 
-    OGRE_DELETE root_;
+    delete root_;
 }
 
 void Ogre3DApplication::setup_resources ()
@@ -397,18 +397,14 @@ void QOgreRenderShim::Update ()
 extern "C" {
 #endif
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-    INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT)
-#else
-        int main(int argc, char **argv)
-#endif
-        {
-            QtApplication qtapp (argc, argv);
-            Ogre3DApplication ogreapp (qtapp.GetView());
-            QOgreRenderShim shim (qtapp.GetView(), ogreapp.GetView());
+int main(int argc, char **argv)
+{
+    QtApplication qtapp (argc, argv);
+    Ogre3DApplication ogreapp (qtapp.GetView());
+    QOgreRenderShim shim (qtapp.GetView(), ogreapp.GetView());
 
-            return qtapp.exec();
-        }
+    return qtapp.exec();
+}
 
 #ifdef __cplusplus
 }
