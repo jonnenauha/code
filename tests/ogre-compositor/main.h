@@ -11,6 +11,7 @@
 
 #include <Ogre.h>
 #include <OgreConfigFile.h>
+#include <OIS/OIS.h>
 
 using Ogre::Real;
 using Ogre::Radian;
@@ -129,6 +130,7 @@ class QtApplication : public QApplication
 
     public:
         QtApplication (int &argc, char **argv);
+        ~QtApplication();
 
         QOgreUIView *GetView () { return view_; }
 

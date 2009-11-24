@@ -1,5 +1,13 @@
 #include "main.h"
 
+#ifdef Q_WS_WIN
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
+#include <QtDebug>
+
 //=============================================================================
 // WorldModel
 
@@ -172,13 +180,16 @@ QOgreUIView::~QOgreUIView ()
 
 void QOgreUIView::initialize_ ()
 {
-    //setUpdatesEnabled (false);
-    //setAttribute (Qt::WA_PaintOnScreen);
-    //setAttribute (Qt::WA_PaintOutsidePaintEvent);
-    //setAttribute (Qt::WA_NoSystemBackground);
+    setUpdatesEnabled (false);
+    setAttribute (Qt::WA_PaintOnScreen);
+    setAttribute (Qt::WA_PaintOutsidePaintEvent);
+    setAttribute (Qt::WA_NoSystemBackground);
 
     setFocusPolicy (Qt::StrongFocus);
     setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+
+    setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy  (Qt::ScrollBarAlwaysOff);
 }    
 
 Ogre::RenderWindow *QOgreUIView::CreateRenderWindow ()
@@ -262,32 +273,27 @@ void QOgreUIView::resizeEvent (QResizeEvent *e)
 
 Ogre3DApplication::Ogre3DApplication (QOgreUIView *uiview)
 {
-    try 
-    {
-        root_ = new Ogre::Root ();
+    root_ = new Ogre::Root ();
 
-        setup_resources ();
-        root_-> restoreConfig();
+    setup_resources ();
+    root_-> restoreConfig();
 
-        root_-> initialise (false);
-        win_ = uiview-> CreateRenderWindow ();
+    root_-> initialise (false);
+    win_ = uiview-> CreateRenderWindow ();
 
-        scenemgr_ = root_-> createSceneManager (Ogre::ST_GENERIC, "SceneManager");
+    scenemgr_ = root_-> createSceneManager (Ogre::ST_GENERIC, "SceneManager");
 
-        Ogre::ResourceGroupManager::getSingleton().  initialiseAllResourceGroups ();
+    Ogre::ResourceGroupManager::getSingleton().  initialiseAllResourceGroups ();
 
-        model_ = new WorldModel (scenemgr_);
-        controller_ = new WorldController (model_);
-        view_ = new WorldView (model_, win_);
+    model_ = new WorldModel (scenemgr_);
+    controller_ = new WorldController (model_);
+    view_ = new WorldView (model_, win_);
 
-        uiview-> SetWorldView (view_);
-        root_-> addFrameListener (controller_);
-    }
-    catch (Ogre::Exception &e)
-    {
-        std::cerr << e.getFullDescription() << std::endl;
-        throw;
-    }
+    uiview-> SetWorldView (view_);
+    uiview-> show();
+    uiview-> resize(1024, 768);
+
+    root_-> addFrameListener (controller_);
 }
 
 Ogre3DApplication::~Ogre3DApplication ()
@@ -332,18 +338,18 @@ QtApplication::QtApplication (int &argc, char **argv) :
     view_ = new QOgreUIView ();
     scene_ = new QGraphicsScene ();
 
-    QDialog *dialog1 = new QDialog ();
-    QDialog *dialog2 = new QDialog ();
+    QDialog *dialog1 = new QDialog (view_);
+    QDialog *dialog2 = new QDialog (view_);
 
     dialog1-> setWindowOpacity (0.8);
-    dialog1-> setWindowTitle ("testing baby");
-    dialog1-> setLayout (new QVBoxLayout);
-    dialog1-> layout()-> addWidget (new QLineEdit);
+    dialog1-> setWindowTitle ("Testing baby");
+    dialog1-> setLayout (new QVBoxLayout(dialog1));
+    dialog1-> layout()-> addWidget (new QLineEdit(dialog1));
 
     dialog2-> setWindowOpacity (0.8);
-    dialog2-> setWindowTitle ("you suck");
-    dialog2-> setLayout (new QVBoxLayout);
-    dialog2-> layout()-> addWidget (new QLineEdit);
+    dialog2-> setWindowTitle ("You suck");
+    dialog2-> setLayout (new QVBoxLayout(dialog2));
+    dialog2-> layout()-> addWidget (new QLineEdit(dialog2));
 
     scene_-> addWidget (dialog1);
     scene_-> addWidget (dialog2);
@@ -358,9 +364,16 @@ QtApplication::QtApplication (int &argc, char **argv) :
     item2-> setFlag (QGraphicsItem::ItemIsMovable);
     item2-> setCacheMode (QGraphicsItem::DeviceCoordinateCache);
     item2-> setPos (50, 50);
+}
 
-    view_-> resize (1024, 768);
-    view_-> show ();
+QtApplication::~QtApplication()
+{
+    delete view_;
+    delete scene_;
+
+#ifdef Q_WS_WIN
+    _CrtDumpMemoryLeaks();
+#endif
 }
 
 //=============================================================================
