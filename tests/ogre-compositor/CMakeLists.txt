@@ -12,6 +12,9 @@ endif (NOT QT4_FOUND)
 
 include(${QT_USE_FILE})
 
+file (TO_CMAKE_PATH $ENV{OGRE_HOME} ENV_OGRE_HOME)
+file (TO_CMAKE_PATH $ENV{OIS_HOME} ENV_OIS_HOME)
+
 sagase_configure_package (OGRE 
     NAMES Ogre OgreSDK ogre OGRE
     COMPONENTS Ogre ogre OGRE OgreMain 
@@ -21,7 +24,7 @@ sagase_configure_package (OGRE
 sagase_configure_package (OIS 
     NAMES Ois ois OIS 
     COMPONENTS OIS
-    PREFIXES ${OIS_HOME})
+    PREFIXES ${ENV_OIS_HOME})
     
 sagase_configure_report (OGRE) 
 sagase_configure_report (OIS)
