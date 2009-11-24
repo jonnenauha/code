@@ -262,24 +262,32 @@ void QOgreUIView::resizeEvent (QResizeEvent *e)
 
 Ogre3DApplication::Ogre3DApplication (QOgreUIView *uiview)
 {
-    root_ = new Ogre::Root ();
+    try 
+    {
+        root_ = new Ogre::Root ();
 
-    setup_resources ();
-    root_-> restoreConfig();
+        setup_resources ();
+        root_-> restoreConfig();
 
-    root_-> initialise (false);
-    win_ = uiview-> CreateRenderWindow ();
+        root_-> initialise (false);
+        win_ = uiview-> CreateRenderWindow ();
 
-    scenemgr_ = root_-> createSceneManager (Ogre::ST_GENERIC, "SceneManager");
+        scenemgr_ = root_-> createSceneManager (Ogre::ST_GENERIC, "SceneManager");
 
-    Ogre::ResourceGroupManager::getSingleton().  initialiseAllResourceGroups ();
+        Ogre::ResourceGroupManager::getSingleton().  initialiseAllResourceGroups ();
 
-    model_ = new WorldModel (scenemgr_);
-    controller_ = new WorldController (model_);
-    view_ = new WorldView (model_, win_);
+        model_ = new WorldModel (scenemgr_);
+        controller_ = new WorldController (model_);
+        view_ = new WorldView (model_, win_);
 
-    uiview-> SetWorldView (view_);
-    root_-> addFrameListener (controller_);
+        uiview-> SetWorldView (view_);
+        root_-> addFrameListener (controller_);
+    }
+    catch (Ogre::Exception &e)
+    {
+        std::cerr << e.getFullDescription() << std::endl;
+        throw;
+    }
 }
 
 Ogre3DApplication::~Ogre3DApplication ()

@@ -13,21 +13,13 @@ endif (NOT QT4_FOUND)
 include(${QT_USE_FILE})
 
 file (TO_CMAKE_PATH $ENV{OGRE_HOME} ENV_OGRE_HOME)
-file (TO_CMAKE_PATH $ENV{OIS_HOME} ENV_OIS_HOME)
 
 sagase_configure_package (OGRE 
     NAMES Ogre OgreSDK ogre OGRE
     COMPONENTS Ogre ogre OGRE OgreMain 
     PREFIXES ${ENV_OGRE_HOME})
 
-
-sagase_configure_package (OIS 
-    NAMES Ois ois OIS 
-    COMPONENTS OIS
-    PREFIXES ${ENV_OIS_HOME})
-    
 sagase_configure_report (OGRE) 
-sagase_configure_report (OIS)
 
 # manually use custom ogre
 #set (OGRE_INCLUDE_DIRS ../ogre/build)
@@ -40,13 +32,12 @@ sagase_configure_report (OIS)
 #link_directories (/usr/local/Trolltech/Qt-4.6.0/lib)
 #add_definitions (-DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_NO_KEYWORDS -DQT_DEBUG)
 
-include_directories (${OGRE_INCLUDE_DIRS} ${OIS_INCLUDE_DIRS})             # Add include directories to the build.
-link_directories (${OGRE_LIBRARY_DIRS} ${OIS_LIBRARY_DIRS})                # Specify directories in which the linker will look for libraries.
-add_definitions (${OGRE_CFLAGS_OTHER} ${OIS_CFLAGS_OTHER})                  # Adds -D define flags to the compilation of source files.
+include_directories (${OGRE_INCLUDE_DIRS})             # Add include directories to the build.
+link_directories (${OGRE_LIBRARY_DIRS})                # Specify directories in which the linker will look for libraries.
+add_definitions (${OGRE_CFLAGS_OTHER})                  # Adds -D define flags to the compilation of source files.
 
 qt4_generate_moc (main.h main_moc.cpp)
 
 add_executable (ogretest main_moc.cpp main.cpp)
     
-target_link_libraries (ogretest ${OGRE_LIBRARIES} ${OIS_LIBRARIES} ${QT_LIBRARIES} 
-    debug ${OGRE_DEBUG_LIBRARIES} ${OIS_DEBUG_LIBRARIES})
+target_link_libraries (ogretest ${OGRE_LIBRARIES} ${QT_LIBRARIES} debug ${OGRE_DEBUG_LIBRARIES})

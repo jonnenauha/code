@@ -11,7 +11,6 @@
 
 #include <Ogre.h>
 #include <OgreConfigFile.h>
-#include <OIS/OIS.h>
 
 using Ogre::Real;
 using Ogre::Radian;
