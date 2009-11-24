@@ -89,12 +89,18 @@ void WorldView::initialize_ ()
         (Real (view_-> getActualWidth()) / 
          Real (view_-> getActualHeight()));
 
+    cout << "????????????" << endl;
+    cout << "render window : " << win_-> getWidth() << " x " << win_-> getHeight() << endl;
+    cout << "render viewport: " << view_-> getActualWidth() << " x " << view_-> getActualHeight() << endl;
+
     // set up off-screen texture
     ui_overlay_texture_ =
         Ogre::TextureManager::getSingleton().createManual
         ("test/texture/UI",
          Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
-         Ogre::TEX_TYPE_2D, win_-> getWidth(), win_-> getHeight(), 0, 
+         Ogre::TEX_TYPE_2D, 
+         // -2 is a guess at the difference betwee window and viewport
+         win_-> getWidth()-2, win_-> getHeight()-2, 0, 
          Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
     Ogre::MaterialPtr material
@@ -131,15 +137,12 @@ WorldView::~WorldView ()
 
 void WorldView::Resize (int width, int height)
 {
-    if (win_ && Ogre::TextureManager::getSingletonPtr())
+    if (Ogre::TextureManager::getSingletonPtr())
     {
         ui_overlay_texture_-> freeInternalResources ();
         ui_overlay_texture_-> setWidth (width);
         ui_overlay_texture_-> setHeight (height);
         ui_overlay_texture_-> createInternalResources ();
-
-        win_-> resize (width, height);
-        win_-> windowMovedOrResized ();
     }
 }
 
@@ -162,6 +165,7 @@ void WorldView::OverlayUI (Ogre::PixelBox &ui)
 
 QOgreUIView::QOgreUIView () :
     QGraphicsView (),
+    win_ (0),
     view_ (0)
 {
     initialize_ ();
@@ -169,6 +173,7 @@ QOgreUIView::QOgreUIView () :
 
 QOgreUIView::QOgreUIView (QGraphicsScene *scene) : 
     QGraphicsView (scene),
+    win_ (0),
     view_ (0)
 {
     initialize_ ();
@@ -181,7 +186,7 @@ QOgreUIView::~QOgreUIView ()
 void QOgreUIView::initialize_ ()
 {
     setUpdatesEnabled (false);
-    setAttribute (Qt::WA_PaintOnScreen);
+    //setAttribute (Qt::WA_PaintOnScreen); // fixes input (!) issues on X11
     setAttribute (Qt::WA_PaintOutsidePaintEvent);
     setAttribute (Qt::WA_NoSystemBackground);
 
@@ -189,7 +194,7 @@ void QOgreUIView::initialize_ ()
     setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
 
     setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
-    setVerticalScrollBarPolicy  (Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
 }    
 
 Ogre::RenderWindow *QOgreUIView::CreateRenderWindow ()
@@ -238,11 +243,7 @@ Ogre::RenderWindow *QOgreUIView::CreateRenderWindow ()
 #endif
 
     QSize size (nativewin-> size());
-
-    QGraphicsView *view = static_cast <QGraphicsView *> (nativewin);
-    if (view) size = view-> viewport()-> size();
-
-    Ogre::RenderWindow *window = Ogre::Root::getSingletonPtr()-> 
+    win_ = Ogre::Root::getSingletonPtr()-> 
         createRenderWindow ("View", size.width(), size.height(), false, &params);
 
     // take over ogre window
@@ -251,20 +252,34 @@ Ogre::RenderWindow *QOgreUIView::CreateRenderWindow ()
     {
         WId ogre_winid = 0x0;
 #ifndef Q_WS_WIN
-        window-> getCustomAttribute ("WINDOW", &ogre_winid);
+        win_-> getCustomAttribute ("WINDOW", &ogre_winid);
 #else
-        window-> getCustomAttribute ("HWND", &ogre_winid);
+        win_-> getCustomAttribute ("HWND", &ogre_winid);
 #endif
         assert (ogre_winid);
         create (ogre_winid);
     }
 
-    return window;
+    return win_;
 }
 
 void QOgreUIView::resizeEvent (QResizeEvent *e)
 {
+    cout << "!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+    cout << "view: " << width() << " x " << height() << endl;
+    cout << "viewport: " << viewport()->width() << " x " << viewport()->height() << endl;
+    cout << "requested: " << e-> size().width() << " x " << e-> size().height() << endl;
+
     QGraphicsView::resizeEvent (e);
+
+    // resize render window to match this
+    if (win_)
+    {
+        win_-> resize (width(), height()); 
+        win_-> windowMovedOrResized ();
+    }
+
+    // resize UI texture to match viewport
     if (view_) view_-> Resize (viewport()-> width(), viewport()-> height());
 }
 
@@ -290,8 +305,6 @@ Ogre3DApplication::Ogre3DApplication (QOgreUIView *uiview)
     view_ = new WorldView (model_, win_);
 
     uiview-> SetWorldView (view_);
-    uiview-> show();
-    uiview-> resize(1024, 768);
 
     root_-> addFrameListener (controller_);
 }
@@ -338,18 +351,18 @@ QtApplication::QtApplication (int &argc, char **argv) :
     view_ = new QOgreUIView ();
     scene_ = new QGraphicsScene ();
 
-    QDialog *dialog1 = new QDialog (view_);
-    QDialog *dialog2 = new QDialog (view_);
+    QDialog *dialog1 = new QDialog ();
+    QDialog *dialog2 = new QDialog ();
 
     dialog1-> setWindowOpacity (0.8);
     dialog1-> setWindowTitle ("Testing baby");
-    dialog1-> setLayout (new QVBoxLayout(dialog1));
-    dialog1-> layout()-> addWidget (new QLineEdit(dialog1));
+    dialog1-> setLayout (new QVBoxLayout());
+    dialog1-> layout()-> addWidget (new QLineEdit());
 
     dialog2-> setWindowOpacity (0.8);
     dialog2-> setWindowTitle ("You suck");
-    dialog2-> setLayout (new QVBoxLayout(dialog2));
-    dialog2-> layout()-> addWidget (new QLineEdit(dialog2));
+    dialog2-> setLayout (new QVBoxLayout());
+    dialog2-> layout()-> addWidget (new QLineEdit());
 
     scene_-> addWidget (dialog1);
     scene_-> addWidget (dialog2);
@@ -364,6 +377,9 @@ QtApplication::QtApplication (int &argc, char **argv) :
     item2-> setFlag (QGraphicsItem::ItemIsMovable);
     item2-> setCacheMode (QGraphicsItem::DeviceCoordinateCache);
     item2-> setPos (50, 50);
+
+    view_-> resize (1024, 768);
+    view_-> show ();
 }
 
 QtApplication::~QtApplication()

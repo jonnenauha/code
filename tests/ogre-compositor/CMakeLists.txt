@@ -12,7 +12,9 @@ endif (NOT QT4_FOUND)
 
 include(${QT_USE_FILE})
 
-file (TO_CMAKE_PATH $ENV{OGRE_HOME} ENV_OGRE_HOME)
+if (MSVC)
+    file (TO_CMAKE_PATH $ENV{OGRE_HOME} ENV_OGRE_HOME)
+endif ()
 
 sagase_configure_package (OGRE 
     NAMES Ogre OgreSDK ogre OGRE
@@ -40,4 +42,8 @@ qt4_generate_moc (main.h main_moc.cpp)
 
 add_executable (ogretest main_moc.cpp main.cpp)
     
-target_link_libraries (ogretest ${OGRE_LIBRARIES} ${QT_LIBRARIES} debug ${OGRE_DEBUG_LIBRARIES})
+if (MSVC)
+    target_link_libraries (ogretest ${OGRE_LIBRARIES} ${QT_LIBRARIES} debug ${OGRE_DEBUG_LIBRARIES})
+else ()
+    target_link_libraries (ogretest ${OGRE_LIBRARIES} ${QT_LIBRARIES})
+endif ()

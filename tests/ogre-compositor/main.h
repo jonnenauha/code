@@ -95,7 +95,8 @@ class QOgreUIView : public QGraphicsView
     private:
         void initialize_ ();
 
-        WorldView   *view_;
+        Ogre::RenderWindow  *win_;
+        WorldView           *view_;
 };
 
 
